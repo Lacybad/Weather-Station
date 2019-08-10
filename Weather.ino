@@ -9,6 +9,7 @@
 #include <time.h>
 #include <ESP8266WiFi.h>
 #include "MiscSettings.h"
+#include "CACert.h"
 
 // force use of AxTLS (BearSSL is now default)
 #include <WiFiClientSecureAxTLS.h>
@@ -26,9 +27,11 @@ const char* ssid = STASSID;
 const char* password = STAPSK;
 
 // Constant variables
-const char* host = "api.github.com";
+const char* host = "api.darksky.net";
 const int httpsPort = 443;
-const String url = "/repos/esp8266/Arduino/commits/master/status";
+const String forecastType = "/forecast/";
+const String forecastLoc = "/44.0039944,-123.0630231";
+const String forecastDetails = "?exclude=minutely,hourly,daily,flags";
 
 // Root certificate used by api.github.com.
 // Defined in "CACert" tab.
@@ -76,6 +79,7 @@ void setup() {
 
     // Synchronize time useing SNTP. This is necessary to verify that
     // the TLS certificates offered by the server are currently valid.
+    Serial.println(caCertLen);
     Serial.print("Setting time using SNTP");
     configTime(8 * 3600, 0, "pool.ntp.org", "time.nist.gov");
     time_t now = time(nullptr);
@@ -116,18 +120,20 @@ void getWeather() {
     }
 
     // Verify validity of server's certificate
-    Serial.println("Verifying cert");
+/*    Serial.println("Verifying cert");
     if (client.verifyCertChain(host)) {
         Serial.println("Server certificate verified");
     } else {
         Serial.println("ERROR: certificate verification failed!");
         return;
-    }
+    } */
 
-    Serial.print("requesting URL: ");
-    Serial.println(url);
+    Serial.print("Getting forecast for: ");
+    Serial.println(forecastType + apikey + forecastLoc + forecastDetails);
 
-    client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+    client.print(String("GET ") + forecastType + apikey + 
+            forecastLoc +
+            " HTTP/1.1\r\n" +
             "Host: " + host + "\r\n" +
             "User-Agent: ESP8266\r\n" +
             "Connection: close\r\n\r\n");
