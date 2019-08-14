@@ -8,6 +8,7 @@
 #include <time.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
+#include <Arduino_JSON.h>
 #include "MiscSettings.h"
 #include "CACert.h"
 
@@ -41,29 +42,16 @@ void setup() {
     LED(HIGH);
 
     Serial.begin(115200);
-    Serial.println();
-    //if (WiFi.SSID() != ssid) {
-        //save time, no need to reconfigure if already configured
-        Serial.print("connecting to ");
-        Serial.println(ssid);
-        WiFi.mode(WIFI_STA);
-        WiFi.persistent(false);
-        WiFi.setAutoConnect(false);
-        WiFi.setAutoReconnect(false);
-        WiFi.begin(ssid, password);
-  /*  }
-    else {
-        Serial.print("connected to ");
-        Serial.println(ssid);
-    } */
+    Serial.print("\nConnecting to ");
+    Serial.println(ssid);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
 
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
     }
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.println("IP address: ");
+    Serial.print("Connected, IP address: ");
     Serial.println(WiFi.localIP());
     
     LED(LOW);
@@ -104,14 +92,15 @@ void getWeather() {
         }
     }
     
-    Serial.println("reply was:");
-    Serial.println("==========");
-    char characterInput;
-    while (client.available()){
-        characterInput = client.read();
-        Serial.print(characterInput);
+    char jsonInput[400] = client.readStringUntil('\n');
+    JSONVar weatherJson = JSON.parse(jsonInput);
+
+    if (weatherJson.typeof(weatherJson) == "undefined"){
+        Serial.println("Parse failed");
+        return;
     }
-    Serial.println();
-    Serial.println("==========");
-    Serial.println();
+
+    if (weatherJson.hasOwnProperty("summary")){
+        Serial.println((const char*) weatherJson["summary"]);
+    }
 }
