@@ -8,7 +8,7 @@
 #include <time.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
-#include <Arduino_JSON.h>
+#include <ArduinoJson.h>
 #include "MiscSettings.h"
 #include "CACert.h"
 
@@ -29,7 +29,7 @@ const char* host = "api.darksky.net";
 const int httpsPort = 443;
 const String forecastType = "/forecast/";
 //const String forecastLoc //see define location
-const String forecastDetails = "?exclude=minutely,hourly,daily,flags";
+const String forecastDetails = "?exclude=minutely,hourly,flags";
 
 BearSSL::WiFiClientSecure client;
 
@@ -42,9 +42,11 @@ void setup() {
     LED(HIGH);
 
     Serial.begin(115200);
+    WiFi.forceSleepWake(); delay(1);
     Serial.print("\nConnecting to ");
     Serial.println(ssid);
-    WiFi.mode(WIFI_STA);
+    WiFi.persistent(false); delay(1);
+    WiFi.mode(WIFI_STA); delay(1);
     WiFi.begin(ssid, password);
 
     while (WiFi.status() != WL_CONNECTED) {
@@ -61,6 +63,8 @@ void setup() {
 void loop() {
     delay(100);
 }
+    
+const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(19) + 4*JSON_OBJECT_SIZE(38) + 4*JSON_OBJECT_SIZE(39) + 6170;
 
 void getWeather() {
     // Connect to remote server
@@ -91,16 +95,35 @@ void getWeather() {
             break;
         }
     }
-    
-    char jsonInput[400] = client.readStringUntil('\n');
-    JSONVar weatherJson = JSON.parse(jsonInput);
 
-    if (weatherJson.typeof(weatherJson) == "undefined"){
-        Serial.println("Parse failed");
+    //help from https://arduinojson.org/v6/assistant/
+    Serial.print("Created doc with size:"); Serial.println(capacity);  
+    DynamicJsonDocument doc(capacity);
+    DeserializationError error = deserializeJson(doc, client);
+
+    if (error){
+        Serial.print("Parse failed - ");
+        Serial.println(error.c_str());
         return;
     }
+    float latitude = doc["latitude"];
+    Serial.println(latitude);
 
-    if (weatherJson.hasOwnProperty("summary")){
-        Serial.println((const char*) weatherJson["summary"]);
+    JsonObject currently = doc["currently"];
+    float currently_temperature = currently["temperature"];
+
+    JsonObject daily = doc["daily"];
+    JsonArray daily_data = daily["data"];
+    for (int i=0; i<7; i++){
+        JsonObject daily_data_0 = daily_data[i];
+        float daily_data_0_temperatureHigh = daily_data_0["temperatureHigh"];
+        Serial.print(i); Serial.print(" temp ");
+        Serial.println(daily_data_0_temperatureHigh);
     }
+
+    Serial.println("Done!"); 
+
+    WiFi.disconnect(); delay(1);
+    WiFi.mode(WIFI_OFF); delay(1);
+    WiFi.forceSleepBegin(); delay(1);
 }
