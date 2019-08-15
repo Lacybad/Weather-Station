@@ -5,10 +5,14 @@
     Original Author: Ivan Grokhotkov, 2017 
  */
 
-#include <time.h>
+//Wifi
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
+//display
+#include <TFT_eSPI.h>
+#include <SPI.h>
+
 #include "MiscSettings.h"
 #include "CACert.h"
 
@@ -20,6 +24,10 @@
     #define apikey "xxx"
     #define forecastLoc "/xx.xx,xx.xx"
 */
+/* Uncomment in <ArduinoLibrary>/TFT_eSPI/User_Setup.h
+    #define ST7735_Driver
+    #define ST7735_GREENTAB2
+*/
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
@@ -30,8 +38,11 @@ const int httpsPort = 443;
 const String forecastType = "/forecast/";
 //const String forecastLoc //see define location
 const String forecastDetails = "?exclude=minutely,hourly,flags";
+const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(19) + 4*JSON_OBJECT_SIZE(38) + 4*JSON_OBJECT_SIZE(39) + 6170;
 
 BearSSL::WiFiClientSecure client;
+
+TFT_eSPI tft = TFT_eSPI(); //start library
 
 void LED(bool led_output){
     digitalWrite(LED_BUILTIN, !led_output); //need to flip the led
@@ -42,20 +53,40 @@ void setup() {
     LED(HIGH);
 
     Serial.begin(115200);
+    tft.init();
+    tft.setRotation(2);
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0,0,2); //start at top, font size 2
+
     WiFi.forceSleepWake(); delay(1);
     Serial.print("\nConnecting to ");
     Serial.println(ssid);
+    tft.println("Connecting to:");
+    tft.println(ssid);
     WiFi.persistent(false); delay(1);
     WiFi.mode(WIFI_STA); delay(1);
     WiFi.begin(ssid, password);
 
+    uint8_t i=0;
+    int16_t cursorY = tft.getCursorY();
+    Serial.print("Cursor Y:");
+    Serial.println(cursorY);
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
+        if (i == 15){
+            tft.drawString("          ", 0, cursorY);
+            tft.setCursor(0,cursorY,2);
+            i = 0;
+        }
+        tft.print(".");
+        i++;
     }
     Serial.print("Connected, IP address: ");
     Serial.println(WiFi.localIP());
-    
+    tft.print("\nIP: ");
+    tft.println(WiFi.localIP());
+
     LED(LOW);
     getWeather();
 }
@@ -64,7 +95,6 @@ void loop() {
     delay(100);
 }
     
-const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(19) + 4*JSON_OBJECT_SIZE(38) + 4*JSON_OBJECT_SIZE(39) + 6170;
 
 void getWeather() {
     // Connect to remote server
@@ -73,6 +103,7 @@ void getWeather() {
     Serial.println(host);
     if (!client.connect(host, httpsPort)) {
         Serial.println("connection failed");
+        tft.println("connection fail");
         return;
     }
 
@@ -92,6 +123,7 @@ void getWeather() {
         String line = client.readStringUntil('\n');
         if (line == "\r") {
             Serial.println("headers received");
+            tft.println("Got forecast");
             break;
         }
     }
