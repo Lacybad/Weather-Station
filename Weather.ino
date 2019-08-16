@@ -36,6 +36,7 @@ void LED(bool led_output);
 void setup();
 void loop();
 void getWeather();
+void printIcon();
 String getWeatherIcon(String icon);
 
 // Constant variables
@@ -50,7 +51,7 @@ const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_S
 //More logic needed: clear, partly-cloudy, thunderstorm
 const String weatherIcons[] = {"rain", "snow", "sleet", "wind", "fog", "cloudy",
     "thunderstorm"}; 
-const int weatherIconsSize = 8;
+const int weatherIconsSize = 7;
 //global variables
 BearSSL::WiFiClientSecure client;
 
@@ -65,6 +66,7 @@ void LED(bool led_output){
 }
 
 void setup() {
+    uint8_t i;
     pinMode(LED_BUILTIN, OUTPUT); //LED, GPIO 2, D4
     LED(HIGH);
 
@@ -85,11 +87,11 @@ void setup() {
     Serial.println(ssid);
     tft.println("Connecting to:");
     tft.println(ssid);
-    WiFi.persistent(false); delay(1);
+  /*  WiFi.persistent(false); delay(1);
     WiFi.mode(WIFI_STA); delay(1);
     WiFi.begin(ssid, password);
 
-    uint8_t i=0;
+    i=0;
     cursorY = tft.getCursorY();
     Serial.print("Cursor Y:");
     Serial.println(cursorY);
@@ -108,18 +110,27 @@ void setup() {
     Serial.println(WiFi.localIP());
     tft.print("\nIP: ");
     tft.println(WiFi.localIP());
-
+*/
     cursorY = tft.getCursorY();
     drawBmp("/unknown.bmp", 0, cursorY+1);
 
     LED(LOW);
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0,0);
+    printIcon("clear-day");
+    printIcon("partly-cloudy-day");
     for (i=0; i<weatherIconsSize; i++){
-        drawBmp(getWeatherIcon(weatherIcons[i]), 0, 0);
-        delay(1000);
+        printIcon(weatherIcons[i]);
     }
+    printIcon("unknown");
+    printIcon("dafs");
     //    getWeather();
+}
+
+void printIcon(String iconName){
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0,0,2);
+    tft.println(iconName);
+    drawBmp(getWeatherIcon(iconName).c_str(), 0, tft.getCursorY());
+    delay(1000);
 }
 
 void loop() {
@@ -192,19 +203,26 @@ void getWeather() {
     
 String getWeatherIcon(String icon){
     String bmpString;
+    int flag = 0;
     if (icon.startsWith("clear")){
         bmpString = "clear";
+        flag = 1;
     }
     else if (icon.startsWith("partly-cloudy")){
         bmpString = "partlycloudy";
+        flag = 1;
     }
     else {
-        for (int i=0; i<weatherIconsSize; i++){
-            if (icon.equals(weatherIcons[i])){
+        int i;
+        for (i=0; i<weatherIconsSize; i++){
+            if (icon.startsWith(weatherIcons[i])){
                 bmpString = weatherIcons[i];
+                flag = 1;
                 break;     
             }
         }
+    }
+    if (flag == 0){
         bmpString = "unknown"; //do not have icon?
     }
     return "/" + bmpString + ".bmp";
