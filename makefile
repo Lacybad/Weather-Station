@@ -27,6 +27,8 @@ verbose-compile: compile
 
 #convert all in bash
 imageConvert:
+	-mv $(DATA)/tstorms.png $(DATA)/thunderstorm.png
+	-cp $(DATA)/sleet.png $(DATA)/hail.png
 	if [ ! -f $(DATA)/*.png ]; then \
 		echo "no png files"; \
 		exit 1; \
@@ -35,4 +37,4 @@ imageConvert:
 	for i in $(DATA)/*.png; do \
 		convert $$i -background black -alpha remove -flatten -alpha off $${i%.png}.bmp; \
 	done
-	mv $(DATA)/*.png $(DATA_PNG)
+	-mv $(DATA)/*.png $(DATA_PNG)

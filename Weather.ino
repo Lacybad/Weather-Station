@@ -36,19 +36,21 @@ void LED(bool led_output);
 void setup();
 void loop();
 void getWeather();
-//void translateWeatherIcon();
-//void getWeatherIcon();
-const char* ssid = STASSID;
-const char* password = STAPSK;
+String getWeatherIcon(String icon);
 
 // Constant variables
+const char* ssid = STASSID;
+const char* password = STAPSK;
 const char* host = "api.darksky.net";
 const int httpsPort = 443;
 const String forecastType = "/forecast/";
 //const String forecastLoc //see define location
 const String forecastDetails = "?exclude=minutely,hourly,flags";
 const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(19) + 4*JSON_OBJECT_SIZE(38) + 4*JSON_OBJECT_SIZE(39) + 6170;
-
+//More logic needed: clear, partly-cloudy, thunderstorm
+const String weatherIcons[] = {"rain", "snow", "sleet", "wind", "fog", "cloudy",
+    "thunderstorm"}; 
+const int weatherIconsSize = 8;
 //global variables
 BearSSL::WiFiClientSecure client;
 
@@ -111,14 +113,19 @@ void setup() {
     drawBmp("/unknown.bmp", 0, cursorY+1);
 
     LED(LOW);
-    getWeather();
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0,0);
+    for (i=0; i<weatherIconsSize; i++){
+        drawBmp(getWeatherIcon(weatherIcons[i]), 0, 0);
+        delay(1000);
+    }
+    //    getWeather();
 }
 
 void loop() {
     delay(100);
 }
     
-
 void getWeather() {
     // Connect to remote server
     client.setInsecure(); //no https
@@ -181,4 +188,24 @@ void getWeather() {
     WiFi.disconnect(); delay(1);
     WiFi.mode(WIFI_OFF); delay(1);
     WiFi.forceSleepBegin(); delay(1);
+}
+    
+String getWeatherIcon(String icon){
+    String bmpString;
+    if (icon.startsWith("clear")){
+        bmpString = "clear";
+    }
+    else if (icon.startsWith("partly-cloudy")){
+        bmpString = "partlycloudy";
+    }
+    else {
+        for (int i=0; i<weatherIconsSize; i++){
+            if (icon.equals(weatherIcons[i])){
+                bmpString = weatherIcons[i];
+                break;     
+            }
+        }
+        bmpString = "unknown"; //do not have icon?
+    }
+    return "/" + bmpString + ".bmp";
 }
