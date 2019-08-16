@@ -26,7 +26,7 @@ verbose-compile: VBS = -v
 verbose-compile: compile
 
 #convert all in bash
-convertImages:
+imageConvert:
 	if [ ! -f $(DATA)/*.png ]; then \
 		echo "no png files"; \
 		exit 1; \

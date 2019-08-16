@@ -9,12 +9,14 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
+#include "MiscSettings.h"
 //display
 #include <TFT_eSPI.h>
 #include <SPI.h>
-
-#include "MiscSettings.h"
-#include "CACert.h"
+#include "src/BMP_functions.h"
+//file system
+#define FS_NO_GLOBALS
+#include <FS.h>
 
 /* include a MiscSettings.h file for these defs
     #ifndef STASSID
@@ -29,6 +31,13 @@
     #define ST7735_GREENTAB2
 */
 
+//function defs
+void LED(bool led_output);
+void setup();
+void loop();
+void getWeather();
+//void translateWeatherIcon();
+//void getWeatherIcon();
 const char* ssid = STASSID;
 const char* password = STAPSK;
 
@@ -40,9 +49,14 @@ const String forecastType = "/forecast/";
 const String forecastDetails = "?exclude=minutely,hourly,flags";
 const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(19) + 4*JSON_OBJECT_SIZE(38) + 4*JSON_OBJECT_SIZE(39) + 6170;
 
+//global variables
 BearSSL::WiFiClientSecure client;
 
 TFT_eSPI tft = TFT_eSPI(); //start library
+
+//display vars
+uint16_t cursorX;
+uint16_t cursorY;
 
 void LED(bool led_output){
     digitalWrite(LED_BUILTIN, !led_output); //need to flip the led
@@ -58,6 +72,12 @@ void setup() {
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0,0,2); //start at top, font size 2
 
+    if (!SPIFFS.begin()){
+        Serial.println("SPIFFS init failed...");
+        while (1) { delay(1); } //stop program
+    }
+    Serial.println("SPIFFS init");
+
     WiFi.forceSleepWake(); delay(1);
     Serial.print("\nConnecting to ");
     Serial.println(ssid);
@@ -68,14 +88,14 @@ void setup() {
     WiFi.begin(ssid, password);
 
     uint8_t i=0;
-    int16_t cursorY = tft.getCursorY();
+    cursorY = tft.getCursorY();
     Serial.print("Cursor Y:");
     Serial.println(cursorY);
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
         if (i == 15){
-            tft.drawString("          ", 0, cursorY);
+            tft.drawString("                    ", 0, cursorY);
             tft.setCursor(0,cursorY,2);
             i = 0;
         }
@@ -86,6 +106,9 @@ void setup() {
     Serial.println(WiFi.localIP());
     tft.print("\nIP: ");
     tft.println(WiFi.localIP());
+
+    cursorY = tft.getCursorY();
+    drawBmp("/unknown.bmp", 0, cursorY+1);
 
     LED(LOW);
     getWeather();
