@@ -5,7 +5,8 @@ ARDUINO_PRGM = $(ARDUINO_IDE)/arduino
 ARDUINO_INO_FILE = Weather
 SRC = $(ARDUINO_INO_FILE).ino
 DATA = data
-DATA_PNG = data_png
+WI = weather-icons/svg
+WIFLAGS = "-density 1200 -resize 64x64 -channel RGB -negate"
 
 default: upload
 
@@ -26,15 +27,24 @@ verbose-compile: VBS = -v
 verbose-compile: compile
 
 #convert all in bash
+#using icons from https://github.com/erikflowers/weather-icons
 imageConvert:
-	-mv $(DATA)/tstorms.png $(DATA)/thunderstorm.png
-	-cp $(DATA)/sleet.png $(DATA)/hail.png
-	if [ ! -f $(DATA)/*.png ]; then \
-		echo "no png files"; \
-		exit 1; \
-	fi
-	mkdir -p $(DATA) $(DATA_PNG)	
-	for i in $(DATA)/*.png; do \
-		convert $$i -background black -alpha remove -flatten -alpha off $${i%.png}.bmp; \
+	mkdir -p $(DATA) 	
+	cp $(WI)/wi-day-sunny.svg $(DATA)/clear-day.svg
+	cp $(WI)/wi-night-clear.svg $(DATA)/clear-night.svg
+	cp $(WI)/wi-rain.svg $(DATA)/rain.svg
+	cp $(WI)/wi-snow.svg $(DATA)/snow.svg
+	cp $(WI)/wi-sleet.svg $(DATA)/sleet.svg
+	cp $(WI)/wi-strong-wind.svg $(DATA)/wind.svg
+	cp $(WI)/wi-fog.svg $(DATA)/fog.svg
+	cp $(WI)/wi-cloudy.svg $(DATA)/cloudy.svg
+	cp $(WI)/wi-day-cloudy.svg $(DATA)/partly-cloudy-day.svg
+	cp $(WI)/wi-night-cloudy.svg $(DATA)/partly-cloudy-night.svg
+	cp $(WI)/wi-hail.svg $(DATA)/hail.svg
+	cp $(WI)/wi-thunderstorm.svg $(DATA)/thunderstorm.svg
+	cp $(WI)/wi-tornado.svg $(DATA)/tornado.svg
+	cp $(WI)/wi-na.svg $(DATA)/na.svg
+	for i in $(DATA)/*.svg; do \
+		convert $(WIFLAGS) $$i $${i%.svg}.bmp; \
 	done
-	-mv $(DATA)/*.png $(DATA_PNG)
+	-rm -f $(DATA)/*.svg

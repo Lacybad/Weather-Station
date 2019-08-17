@@ -2,4 +2,4 @@
 MiscSettings.h
 *.der
 data/
-data_png/
+weather-icons/
