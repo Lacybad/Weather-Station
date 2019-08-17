@@ -6,7 +6,7 @@ ARDUINO_INO_FILE = Weather
 SRC = $(ARDUINO_INO_FILE).ino
 DATA = data
 WI = weather-icons/svg
-WIFLAGS = "-density 1200 -resize 64x64 -channel RGB -negate"
+WIFLAGS = -density 200 -resize 48x48 -channel RGB -negate  -type truecolor
 
 default: upload
 
@@ -45,6 +45,7 @@ imageConvert:
 	cp $(WI)/wi-tornado.svg $(DATA)/tornado.svg
 	cp $(WI)/wi-na.svg $(DATA)/na.svg
 	for i in $(DATA)/*.svg; do \
+		echo -e "Converting $$i"; \
 		convert $(WIFLAGS) $$i $${i%.svg}.bmp; \
 	done
-	-rm -f $(DATA)/*.svg
+	-rm -f $(DATA)/*.svg 
