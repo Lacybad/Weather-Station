@@ -5,7 +5,10 @@ ARDUINO_PRGM = $(ARDUINO_IDE)/arduino
 ARDUINO_INO_FILE = Weather
 SRC = $(ARDUINO_INO_FILE).ino
 DATA = data
+
+#Weather Images
 WI = weather-icons/svg
+#Flags - make density large, then resize, then flip colors, then make it 24 bit color
 WIFLAGS = -density 200 -resize 48x48 -channel RGB -negate  -type truecolor
 
 default: upload

@@ -9,6 +9,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
+#include "src/weatherClass.h"
 #include "MiscSettings.h"
 //display
 #include <TFT_eSPI.h>
@@ -59,6 +60,7 @@ const int weatherIconSize = 14;
 BearSSL::WiFiClientSecure client;
 
 TFT_eSPI tft = TFT_eSPI(); //start library
+CurrentWeather current;
 
 //display vars
 uint16_t cursorX;
@@ -90,7 +92,7 @@ void setup() {
     Serial.println(ssid);
     tft.println("Connecting to:");
     tft.println(ssid);
-  /*  WiFi.persistent(false); delay(1);
+    WiFi.persistent(false); delay(1);
     WiFi.mode(WIFI_STA); delay(1);
     WiFi.begin(ssid, password);
 
@@ -113,16 +115,17 @@ void setup() {
     Serial.println(WiFi.localIP());
     tft.print("\nIP: ");
     tft.println(WiFi.localIP());
-*/
-    cursorY = tft.getCursorY();
-    drawBmp("/na.bmp", 0, cursorY+1);
+
+    //cursorY = tft.getCursorY();
+    //drawBmp("/na.bmp", 0, cursorY+1);
 
     LED(LOW);
+    /*
     for (i=0; i<weatherIconSize-1; i++){
         printIcon(checkWeatherIcon(weatherIcon[i]));
-    }
-    printIcon(checkWeatherIcon("dsasdfa"));
-    //    getWeather();
+    }*/
+    //printIcon(checkWeatherIcon("dsasdfa"));
+    getWeather();
 }
 
 void printIcon(int icon){
@@ -184,11 +187,8 @@ void getWeather() {
         Serial.println(error.c_str());
         return;
     }
-    float latitude = doc["latitude"];
-    Serial.println(latitude);
-
-    JsonObject currently = doc["currently"];
-    float currently_temperature = currently["temperature"];
+    current.setupWeather(doc["currently"]);
+    Serial.println(current.temperature);
 
     JsonObject daily = doc["daily"];
     JsonArray daily_data = daily["data"];
