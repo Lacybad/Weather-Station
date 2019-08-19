@@ -8,13 +8,15 @@ DATA = data
 
 #Weather Images
 WI = weather-icons/svg
-#Flags - make density large, then resize, then flip colors, then make it 24 bit color
-WIFLAGS = -density 200 -resize 48x48 -channel RGB -negate  -type truecolor
+#Flags - make density large, then resize, flip colors, set 24 bit color
+WIFLAG_COLOR = -channel RGB -negate  -type truecolor
+WIFLAG_LARGE = -density 200 -resize 48x48 $(WIFLAG_COLOR)
+WIFLAG_SMALL = -density 200 -resize 24x24 $(WIFLAG_COLOR)
 
 default: upload
 
 gui: openGUI
-openGUI: 
+openGUI:
 	$(ARDUINO_PRGM) $(SRC)
 
 upload:
@@ -31,8 +33,8 @@ verbose-compile: compile
 
 #convert all in bash
 #using icons from https://github.com/erikflowers/weather-icons
-imageConvert:
-	mkdir -p $(DATA) 	
+imageConvertLarge:
+	mkdir -p $(DATA)
 	cp $(WI)/wi-day-sunny.svg $(DATA)/clear-day.svg
 	cp $(WI)/wi-night-clear.svg $(DATA)/clear-night.svg
 	cp $(WI)/wi-rain.svg $(DATA)/rain.svg
@@ -49,6 +51,19 @@ imageConvert:
 	cp $(WI)/wi-na.svg $(DATA)/na.svg
 	for i in $(DATA)/*.svg; do \
 		echo -e "Converting $$i"; \
-		convert $(WIFLAGS) $$i $${i%.svg}.bmp; \
+		convert $(WIFLAG_LARGE) $$i $${i%.svg}.bmp; \
 	done
-	-rm -f $(DATA)/*.svg 
+	-rm -f $(DATA)/*.svg
+
+imageConvertSmall:
+	mkdir -p $(DATA)
+	cp $(WI)/wi-sunrise.svg $(DATA)/sunrise.svg
+	cp $(WI)/wi-sunset.svg $(DATA)/sunset.svg
+	for i in $(DATA)/*.svg; do \
+		echo -e "Converting $$i"; \
+		convert $(WIFLAG_SMALL) $$i $${i%.svg}.bmp; \
+	done
+	-rm -f $(DATA)/*.svg
+
+imageConvert: imageConvertLarge	imageConvertSmall
+

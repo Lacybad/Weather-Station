@@ -10,17 +10,29 @@
 #include <ArduinoJson.h>
 
 class CurrentWeather {
-    public:
-        CurrentWeather();
-        void setupWeather(JsonObject current);
-        bool setup = false;
+    private:
+        bool setup;
         long time;
         const char *icon;
         float temperature;
+
+    public:
+        CurrentWeather();
+        void setupWeather(JsonObject current);
+        bool getSetup();
+        long getTime();
+        const char* getIcon();
+        float getTemp();
 };
 
-//class dailyWeather {
+class DailyWeather {
+    private:
+        bool setup;
 
-//}
+    public:
+        DailyWeather();
+        void setupWeather(JsonObject daily);
+        bool getSetup();
+};
 
 #endif

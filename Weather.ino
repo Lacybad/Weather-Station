@@ -188,7 +188,8 @@ void getWeather() {
         return;
     }
     current.setupWeather(doc["currently"]);
-    Serial.println(current.temperature);
+    Serial.println(current.getTemp());
+    printIcon(checkWeatherIcon(current.getIcon()));
 
     JsonObject daily = doc["daily"];
     JsonArray daily_data = daily["data"];
