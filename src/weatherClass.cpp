@@ -50,3 +50,27 @@ void DailyWeather::setupWeather(JsonObject daily) {
 bool DailyWeather::getSetup(){
     return setup;
 }
+
+long DailyWeather::getTime(){
+    return time;
+}
+
+const char* DailyWeather::getIcon(){
+    return icon;
+}
+
+bool DailyWeather::getSetup(){
+    return setup;
+}
+bool DailyWeather::getSetup(){
+    return setup;
+}
+bool DailyWeather::getSetup(){
+    return setup;
+}
+bool DailyWeather::getSetup(){
+    return setup;
+}
+bool DailyWeather::getSetup(){
+    return setup;
+}

@@ -28,6 +28,14 @@ class CurrentWeather {
 class DailyWeather {
     private:
         bool setup;
+        long time;
+        const char *icon;
+        long sunriseTime;
+        long sunsetTime;
+        float precipProbability;
+        float temperatureHigh;
+        float temperatureLow;
+        float humidity;
 
     public:
         DailyWeather();
