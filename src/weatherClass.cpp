@@ -14,6 +14,7 @@ Weather::Weather() {
 
 bool Weather::setupWeather(JsonObject weatherData) {
     //const char* weatherType;
+    //https://arduinojson.org/v6/api/jsonobject/containskey/
     //weatherType = weatherData["temperatureHigh"]; //check if daily
     //if (weatherType) { //check if not null
     if (weatherData.containsKey("temperatureHigh")) { //check if not null
@@ -45,7 +46,7 @@ bool Weather::setupWeather(JsonObject weatherData) {
 
     precipProbability = weatherData["precipProbability"];
 
-    //
+    //temperature
     if(daily){
         temperatureHigh = weatherData["apparentTemperatureHigh"];
         temperatureLow = weatherData["apparentTemperatureLow"];

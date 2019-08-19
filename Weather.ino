@@ -60,7 +60,11 @@ const int weatherIconSize = 14;
 BearSSL::WiFiClientSecure client;
 
 TFT_eSPI tft = TFT_eSPI(); //start library
-Weather current;
+
+//weather variables
+Weather currentWeather;
+Weather dailyWeather[3]; //weather for today, tomorrow, and day+1
+const int dailyWeatherSize = 3;
 
 //display vars
 uint16_t cursorX;
@@ -187,25 +191,30 @@ void getWeather() {
         Serial.println(error.c_str());
         return;
     }
-    bool output = current.setupWeather(doc["currently"]);
+    bool output = currentWeather.setupWeather(doc["currently"]);
     if (output == false){
         Serial.println("Setup failed");
         return;
     }
 
-    Serial.println(current.getTemp());
-    printIcon(checkWeatherIcon(current.getIcon()));
-    Serial.println(current.getSunriseTime());
-    Serial.println(current.getTempHigh());
-    Serial.println(current.getHumidity());
+    Serial.println(currentWeather.getTemp());
+    printIcon(checkWeatherIcon(currentWeather.getIcon()));
+    Serial.println(currentWeather.getSunriseTime());
+    Serial.println(currentWeather.getTempHigh());
+    Serial.println(currentWeather.getHumidity());
 
-    JsonObject daily = doc["daily"];
-    JsonArray daily_data = daily["data"];
-    for (int i=0; i<7; i++){
-        JsonObject daily_data_0 = daily_data[i];
-        float daily_data_0_temperatureHigh = daily_data_0["temperatureHigh"];
-        Serial.print(i); Serial.print(" temp ");
-        Serial.println(daily_data_0_temperatureHigh);
+    for (int i=0; i<dailyWeatherSize; i++){
+        output = dailyWeather[i].setupWeather(doc["daily"]["data"][i]);
+        if (output == false){
+            Serial.println("Setup failed");
+            return;
+        }
+        Serial.println(dailyWeather[i].getTemp());
+        printIcon(checkWeatherIcon(dailyWeather[i].getIcon()));
+        Serial.println(dailyWeather[i].getSunriseTime());
+        Serial.println(dailyWeather[i].getTempHigh());
+        Serial.println(dailyWeather[i].getHumidity());
+        Serial.println("=================")
     }
 
     Serial.println("Done!");
