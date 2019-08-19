@@ -7,70 +7,95 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-//current weather
-CurrentWeather::CurrentWeather() {
+// weather - both current and daily
+Weather::Weather() {
     setup = false;
 }
 
-void CurrentWeather::setupWeather(JsonObject current) {
-    time = current["time"];
-    icon = current["icon"];
-    temperature = current["apparentTemperature"];
+bool Weather::setupWeather(JsonObject weatherData) {
+    //const char* weatherType;
+    //weatherType = weatherData["temperatureHigh"]; //check if daily
+    //if (weatherType) { //check if not null
+    if (weatherData.containsKey("temperatureHigh")) { //check if not null
+        daily = true;
+    }
+    else {
+        //weatherType = weatherData["temperature"]; //check if current
+        if (weatherData.containsKey("temperature")){
+            daily = false;
+        }
+        else { //is an error
+            setup = false;
+            return false;
+        }
+    }
+
+    time = weatherData["time"];
+    icon = weatherData["icon"];
+
+    //sunset/sunrise time
+    if (daily){
+        sunriseTime = weatherData["sunriseTime"];
+        sunsetTime = weatherData["sunsetTime"];
+    }
+    else {
+        sunriseTime = 0;
+        sunsetTime = 0;
+    }
+
+    precipProbability = weatherData["precipProbability"];
+
+    //
+    if(daily){
+        temperatureHigh = weatherData["apparentTemperatureHigh"];
+        temperatureLow = weatherData["apparentTemperatureLow"];
+        temperature = temperatureHigh;
+    }
+    else {
+        temperature = weatherData["apparentTemperature"];
+        temperatureHigh = temperature;
+        temperatureLow = temperature;
+    }
+
+    humidity = weatherData["humidity"];
+
+    setup = true;
+    return true;
 }
 
 //getter functions
-bool CurrentWeather::getSetup(){
+bool Weather::getSetup(){
     return setup;
 }
 
-long CurrentWeather::getTime(){
+long Weather::getTime(){
     return time;
 }
 
-const char* CurrentWeather::getIcon(){
+const char* Weather::getIcon(){
     return icon;
 }
 
-float CurrentWeather::getTemp(){
+long Weather::getSunriseTime(){
+    return sunriseTime;
+}
+
+long Weather::getSunsetTime(){
+    return sunsetTime;
+}
+
+float Weather::getTemp(){
     return temperature;
 }
 
-/* ============================================
-                 Daily Weather
-   ============================================ */
-DailyWeather::DailyWeather() {
-    setup = false;
+float Weather::getTempHigh(){
+    return temperatureHigh;
 }
 
-void DailyWeather::setupWeather(JsonObject daily) {
-    setup = false;
+float Weather::getTempLow(){
+    return temperatureLow;
 }
 
-//getter functions
-bool DailyWeather::getSetup(){
-    return setup;
-}
-
-long DailyWeather::getTime(){
-    return time;
-}
-
-const char* DailyWeather::getIcon(){
-    return icon;
-}
-
-bool DailyWeather::getSetup(){
-    return setup;
-}
-bool DailyWeather::getSetup(){
-    return setup;
-}
-bool DailyWeather::getSetup(){
-    return setup;
-}
-bool DailyWeather::getSetup(){
-    return setup;
-}
-bool DailyWeather::getSetup(){
-    return setup;
+float Weather::getHumidity(){
+    return humidity;
 }

@@ -60,7 +60,7 @@ const int weatherIconSize = 14;
 BearSSL::WiFiClientSecure client;
 
 TFT_eSPI tft = TFT_eSPI(); //start library
-CurrentWeather current;
+Weather current;
 
 //display vars
 uint16_t cursorX;
@@ -187,9 +187,17 @@ void getWeather() {
         Serial.println(error.c_str());
         return;
     }
-    current.setupWeather(doc["currently"]);
+    bool output = current.setupWeather(doc["currently"]);
+    if (output == false){
+        Serial.println("Setup failed");
+        return;
+    }
+
     Serial.println(current.getTemp());
     printIcon(checkWeatherIcon(current.getIcon()));
+    Serial.println(current.getSunriseTime());
+    Serial.println(current.getTempHigh());
+    Serial.println(current.getHumidity());
 
     JsonObject daily = doc["daily"];
     JsonArray daily_data = daily["data"];
