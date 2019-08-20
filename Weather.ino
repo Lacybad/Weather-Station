@@ -38,10 +38,12 @@ void LED(bool led_output);
 void setup();
 void loop();
 void getWeather();
+void printWeatherDisplay();
 bool printWeatherSerial();
-void printIcon();
+void printIcon(const char *icon);
 int checkWeatherIcon(const char *icon);
 void clearScreen(int textSize);
+void setTextSize(int textSize);
 void connectToWifi();
 void disconnectWifi();
 
@@ -101,17 +103,7 @@ void setup() {
 
     getWeather();
     printWeatherSerial();
-}
-
-void printIcon(int icon){
-    tft.println(weatherIcon[icon]);
-
-    char temp[25] = "/";
-    strcat(temp, weatherIcon[icon]);
-    strcat(temp, ".bmp");
-
-    drawBmp(temp, 0, tft.getCursorY());
-    delay(1000);
+    printWeatherDisplay();
 }
 
 void loop() {
@@ -181,11 +173,21 @@ void getWeather() {
     Serial.println("Done!");
 }
 
+void printWeatherDisplay(){
+    clearScreen(2);
+
+    tft.print("Currently: ");
+    tft.println(currentWeather.getTime());
+    printIcon(currentWeather.getIcon());
+    tft.setCursor(32,tft.getCursorY(), 4);
+    tft.println(currentWeather.getTemp());
+    tft.println("here");
+}
+
 bool printWeatherSerial(){
     if (currentWeather.getSetup()){
         Serial.println("=================");
         Serial.println(currentWeather.getTemp());
-        printIcon(checkWeatherIcon(currentWeather.getIcon()));
         Serial.println(currentWeather.getSunriseTime());
         Serial.println(currentWeather.getTempHigh());
         Serial.println(currentWeather.getHumidity());
@@ -197,7 +199,6 @@ bool printWeatherSerial(){
     for (int i=0; i<dailyWeatherSize; i++){
         if (dailyWeather[i].getSetup()){
             Serial.println(dailyWeather[i].getTemp());
-            //printIcon(checkWeatherIcon(dailyWeather[i].getIcon()));
             Serial.println(dailyWeather[i].getSunriseTime());
             Serial.println(dailyWeather[i].getTempHigh());
             Serial.println(dailyWeather[i].getHumidity());
@@ -207,6 +208,17 @@ bool printWeatherSerial(){
             return false;
         }
     }
+}
+
+void printIcon(const char *icon){
+    int iconNum = checkWeatherIcon(icon);
+
+    char temp[25] = "/";
+    strcat(temp, weatherIcon[iconNum]);
+    strcat(temp, ".bmp");
+
+    drawBmp(temp, 0, tft.getCursorY());
+    delay(1000);
 }
 
 //can not edit input
@@ -224,6 +236,11 @@ int checkWeatherIcon(const char *icon){
 void clearScreen(int textSize){
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0,0,textSize);
+}
+
+void setTextSize(int textSize){
+    cursorY = tft.getCursorY() + 1;
+    tft.setCursor(0,cursorY,textSize);
 }
 
 void connectToWifi(){
