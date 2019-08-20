@@ -38,8 +38,12 @@ void LED(bool led_output);
 void setup();
 void loop();
 void getWeather();
+bool printWeatherSerial();
 void printIcon();
 int checkWeatherIcon(const char *icon);
+void clearScreen(int textSize);
+void connectToWifi();
+void disconnectWifi();
 
 // Constant variables
 const char *ssid = STASSID;
@@ -75,15 +79,13 @@ void LED(bool led_output){
 }
 
 void setup() {
-    uint8_t i;
     pinMode(LED_BUILTIN, OUTPUT); //LED, GPIO 2, D4
     LED(HIGH);
 
     Serial.begin(115200);
     tft.init();
     tft.setRotation(2);
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0,0,2); //start at top, font size 2
+    clearScreen(2); //start at top, font size 2
 
     if (!SPIFFS.begin()){
         Serial.println("SPIFFS init failed...");
@@ -91,50 +93,17 @@ void setup() {
     }
     Serial.println("SPIFFS init");
 
-    WiFi.forceSleepWake(); delay(1);
-    Serial.print("\nConnecting to ");
-    Serial.println(ssid);
-    tft.println("Connecting to:");
-    tft.println(ssid);
-    WiFi.persistent(false); delay(1);
-    WiFi.mode(WIFI_STA); delay(1);
-    WiFi.begin(ssid, password);
-
-    i=0;
-    cursorY = tft.getCursorY();
-    Serial.print("Cursor Y:");
-    Serial.println(cursorY);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-        if (i == 15){
-            tft.drawString("                    ", 0, cursorY);
-            tft.setCursor(0,cursorY,2);
-            i = 0;
-        }
-        tft.print(".");
-        i++;
-    }
-    Serial.print("Connected, IP address: ");
-    Serial.println(WiFi.localIP());
-    tft.print("\nIP: ");
-    tft.println(WiFi.localIP());
+    connectToWifi();
+    LED(LOW);
 
     //cursorY = tft.getCursorY();
     //drawBmp("/na.bmp", 0, cursorY+1);
 
-    LED(LOW);
-    /*
-    for (i=0; i<weatherIconSize-1; i++){
-        printIcon(checkWeatherIcon(weatherIcon[i]));
-    }*/
-    //printIcon(checkWeatherIcon("dsasdfa"));
     getWeather();
+    printWeatherSerial();
 }
 
 void printIcon(int icon){
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0,0,2);
     tft.println(weatherIcon[icon]);
 
     char temp[25] = "/";
@@ -150,6 +119,8 @@ void loop() {
 }
 
 void getWeather() {
+    clearScreen(2);
+
     // Connect to remote server
     client.setInsecure(); //no https
     Serial.print("connecting to ");
@@ -157,27 +128,29 @@ void getWeather() {
     if (!client.connect(host, httpsPort)) {
         Serial.println("connection failed");
         tft.println("connection fail");
+        client.stop();
         return;
     }
+    else {
+        Serial.print("Getting forecast for: ");
+        Serial.println("https://" + String(host) +
+                forecastType + apikey + forecastLoc + forecastDetails);
 
-    Serial.print("Getting forecast for: ");
-    Serial.println("https://" + String(host) +
-            forecastType + apikey + forecastLoc + forecastDetails);
+        client.print(String("GET ") + forecastType + apikey +
+                forecastLoc + forecastDetails +
+                " HTTP/1.1\r\n" +
+                "Host: " + host + "\r\n" +
+                "User-Agent: ESP8266\r\n" +
+                "Connection: close\r\n\r\n");
 
-    client.print(String("GET ") + forecastType + apikey +
-            forecastLoc + forecastDetails +
-            " HTTP/1.1\r\n" +
-            "Host: " + host + "\r\n" +
-            "User-Agent: ESP8266\r\n" +
-            "Connection: close\r\n\r\n");
-
-    Serial.println("request sent");
-    while (client.connected()) {
-        String line = client.readStringUntil('\n');
-        if (line == "\r") {
-            Serial.println("headers received");
-            tft.println("Got forecast");
-            break;
+        Serial.println("request sent");
+        while (client.connected()) {
+            String line = client.readStringUntil('\n');
+            if (line == "\r") {
+                Serial.println("headers received");
+                tft.println("Got forecast");
+                break;
+            }
         }
     }
 
@@ -189,39 +162,51 @@ void getWeather() {
     if (error){
         Serial.print("Parse failed - ");
         Serial.println(error.c_str());
+        tft.println("JSON parse failed");
         return;
     }
     bool output = currentWeather.setupWeather(doc["currently"]);
     if (output == false){
-        Serial.println("Setup failed");
+        Serial.println("Setup failed for current");
         return;
     }
-
-    Serial.println(currentWeather.getTemp());
-    printIcon(checkWeatherIcon(currentWeather.getIcon()));
-    Serial.println(currentWeather.getSunriseTime());
-    Serial.println(currentWeather.getTempHigh());
-    Serial.println(currentWeather.getHumidity());
-
     for (int i=0; i<dailyWeatherSize; i++){
         output = dailyWeather[i].setupWeather(doc["daily"]["data"][i]);
         if (output == false){
-            Serial.println("Setup failed");
+            Serial.println("Setup failed for daily");
             return;
         }
-        Serial.println(dailyWeather[i].getTemp());
-        printIcon(checkWeatherIcon(dailyWeather[i].getIcon()));
-        Serial.println(dailyWeather[i].getSunriseTime());
-        Serial.println(dailyWeather[i].getTempHigh());
-        Serial.println(dailyWeather[i].getHumidity());
-        Serial.println("=================")
     }
 
     Serial.println("Done!");
+}
 
-    WiFi.disconnect(); delay(1);
-    WiFi.mode(WIFI_OFF); delay(1);
-    WiFi.forceSleepBegin(); delay(1);
+bool printWeatherSerial(){
+    if (currentWeather.getSetup()){
+        Serial.println("=================");
+        Serial.println(currentWeather.getTemp());
+        printIcon(checkWeatherIcon(currentWeather.getIcon()));
+        Serial.println(currentWeather.getSunriseTime());
+        Serial.println(currentWeather.getTempHigh());
+        Serial.println(currentWeather.getHumidity());
+    }
+    else {
+        return false;
+    }
+    Serial.println("=================");
+    for (int i=0; i<dailyWeatherSize; i++){
+        if (dailyWeather[i].getSetup()){
+            Serial.println(dailyWeather[i].getTemp());
+            //printIcon(checkWeatherIcon(dailyWeather[i].getIcon()));
+            Serial.println(dailyWeather[i].getSunriseTime());
+            Serial.println(dailyWeather[i].getTempHigh());
+            Serial.println(dailyWeather[i].getHumidity());
+            Serial.println("=================");
+        }
+        else {
+            return false;
+        }
+    }
 }
 
 //can not edit input
@@ -234,4 +219,46 @@ int checkWeatherIcon(const char *icon){
     }
     //do not know icon, return default unknown
     return weatherIconSize-1;
+}
+
+void clearScreen(int textSize){
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0,0,textSize);
+}
+
+void connectToWifi(){
+    WiFi.forceSleepWake(); delay(1);
+    Serial.print("\nConnecting to ");
+    Serial.println(ssid);
+    tft.println("Connecting to:");
+    tft.println(ssid);
+    WiFi.persistent(false); delay(1);
+    WiFi.mode(WIFI_STA); delay(1);
+    WiFi.begin(ssid, password);
+
+    int i = 0;
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+        if (i == 15){
+            tft.drawString("                    ", 0, cursorY);
+            tft.setCursor(0,cursorY,2);
+            i = 0;
+        }
+        tft.print(".");
+        i++;
+    }
+    Serial.print("Connected, IP address: ");
+    Serial.println(WiFi.localIP());
+    tft.print("\nIP: ");
+    tft.println(WiFi.localIP());
+}
+
+void disconnectWifi(){
+    WiFi.disconnect();
+    delay(1);
+    WiFi.mode(WIFI_OFF);
+    delay(1);
+    WiFi.forceSleepBegin();
+    delay(1);
 }
