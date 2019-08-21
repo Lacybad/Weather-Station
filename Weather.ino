@@ -188,7 +188,7 @@ void printWeatherDisplay(){
     setDebug(INFO);
     waitForSync();
     Timezone myTz;
-    myTz.setLocation("America/Los_Angeles");
+    //myTz.setLocation("America/Los_Angeles");
     Serial.println(myTz.dateTime("d-M-y g:i A T"));
 
     time_t currentTime = (time_t)currentWeather.getTimeLong();
@@ -196,6 +196,10 @@ void printWeatherDisplay(){
     Serial.println(myTz.dateTime(currentTime, "d-M-y g:i A T"));
 
     currentTime = (time_t)dailyWeather[0].getTimeLong();
+    Serial.println(currentTime);
+    Serial.println(myTz.dateTime(currentTime, "d-M-y g:i A T"));
+
+    currentTime = (time_t)dailyWeather[1].getTimeLong();
     Serial.println(currentTime);
     Serial.println(myTz.dateTime(currentTime, "d-M-y g:i A T"));
 }
