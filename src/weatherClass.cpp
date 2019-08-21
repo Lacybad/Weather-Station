@@ -33,12 +33,12 @@ bool Weather::setupWeather(JsonObject weatherData) {
     }
 
     timeLong = weatherData["time"];
-    char buf[3];
+/*    char buf[3];
     itoa(hour(timeLong), buf, 10);
     strcpy(*time,buf);
     strcat(*time,":");
     itoa(minute(timeLong), buf, 10);
-    strcat(*time,buf);
+    strcat(*time,buf); */
 
     icon = weatherData["icon"];
 

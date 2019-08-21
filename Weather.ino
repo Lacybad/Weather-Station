@@ -260,6 +260,7 @@ void connectToWifi(){
     WiFi.begin(ssid, password);
 
     int i = 0;
+    cursorY = tft.getCursorY();
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
