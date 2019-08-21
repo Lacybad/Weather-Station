@@ -5,6 +5,7 @@
 
 #include "weatherClass.h"
 #include <Arduino.h>
+#include <Time.h>
 #include <ArduinoJson.h>
 
 // weather - both current and daily
@@ -31,7 +32,14 @@ bool Weather::setupWeather(JsonObject weatherData) {
         }
     }
 
-    time = weatherData["time"];
+    timeLong = weatherData["time"];
+    char buf[3];
+    itoa(hour(timeLong), buf, 10);
+    strcpy(*time,buf);
+    strcat(*time,":");
+    itoa(minute(timeLong), buf, 10);
+    strcat(*time,buf);
+
     icon = weatherData["icon"];
 
     //sunset/sunrise time
@@ -48,15 +56,18 @@ bool Weather::setupWeather(JsonObject weatherData) {
 
     //temperature
     if(daily){
-        temperatureHigh = weatherData["apparentTemperatureHigh"];
-        temperatureLow = weatherData["apparentTemperatureLow"];
-        temperature = temperatureHigh;
+        temperatureHighLong = weatherData["apparentTemperatureHigh"];
+        temperatureLowLong = weatherData["apparentTemperatureLow"];
+        temperatureLong = temperatureHighLong;
     }
     else {
-        temperature = weatherData["apparentTemperature"];
-        temperatureHigh = temperature;
-        temperatureLow = temperature;
+        temperatureLong = weatherData["apparentTemperature"];
+        temperatureHighLong = temperatureLong;
+        temperatureLowLong = temperatureLong;
     }
+    temperature = round(temperatureLong);
+    temperatureHigh = round(temperatureHighLong);
+    temperatureLow = round(temperatureLowLong);
 
     humidity = weatherData["humidity"];
 
@@ -69,8 +80,12 @@ bool Weather::getSetup(){
     return setup;
 }
 
-long Weather::getTime(){
-    return time;
+long Weather::getTimeLong(){
+    return timeLong;
+}
+
+char* Weather::getTime(){
+    return *time;
 }
 
 const char* Weather::getIcon(){
@@ -85,15 +100,15 @@ long Weather::getSunsetTime(){
     return sunsetTime;
 }
 
-float Weather::getTemp(){
+int Weather::getTemp(){
     return temperature;
 }
 
-float Weather::getTempHigh(){
+int Weather::getTempHigh(){
     return temperatureHigh;
 }
 
-float Weather::getTempLow(){
+int Weather::getTempLow(){
     return temperatureLow;
 }
 

@@ -179,9 +179,10 @@ void printWeatherDisplay(){
     tft.print("Currently: ");
     tft.println(currentWeather.getTime());
     printIcon(currentWeather.getIcon());
-    tft.setCursor(32,tft.getCursorY(), 4);
+    tft.setCursor(tft.getCursorX()+48,tft.getCursorY(), 4);
     tft.println(currentWeather.getTemp());
-    tft.println("here");
+    setTextSize(2);
+    tft.println("\nhere");
 }
 
 bool printWeatherSerial(){
@@ -239,8 +240,13 @@ void clearScreen(int textSize){
 }
 
 void setTextSize(int textSize){
-    cursorY = tft.getCursorY() + 1;
-    tft.setCursor(0,cursorY,textSize);
+    cursorX = tft.getCursorX();
+    cursorY = tft.getCursorY();
+    if (cursorX != 0){
+        cursorY++;
+        cursorX = 0;
+    }
+    tft.setCursor(cursorX,cursorY,textSize);
 }
 
 void connectToWifi(){

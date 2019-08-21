@@ -13,14 +13,18 @@ class Weather {
     private:
         bool setup;
         bool daily;
-        long time;
+        long timeLong;
+        char *time[6];
         const char *icon;
         long sunriseTime;
         long sunsetTime;
         float precipProbability;
-        float temperature;
-        float temperatureHigh;
-        float temperatureLow;
+        float temperatureLong;
+        int temperature;
+        float temperatureHighLong;
+        int temperatureHigh;
+        float temperatureLowLong;
+        int temperatureLow;
         float humidity;
 
     public:
@@ -28,14 +32,15 @@ class Weather {
         bool setupWeather(JsonObject weatherData);
         bool getSetup();
         bool isDaily();
-        long getTime();
+        long getTimeLong();
+        char* getTime();
         const char* getIcon();
         long getSunriseTime();
         long getSunsetTime();
         float getPrecipProb();
-        float getTemp();
-        float getTempHigh();
-        float getTempLow();
+        int getTemp();
+        int getTempHigh();
+        int getTempLow();
         float getHumidity();
 };
 
