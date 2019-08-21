@@ -19,7 +19,7 @@
 //use fs::File for SPIFFS, sd::File for SD if needed
 #define FS_NO_GLOBALS
 #include <FS.h>
-#include <ezTime.h>
+#include <time.h>
 
 /* include a MiscSettings.h file for these defs
     #ifndef STASSID
@@ -86,6 +86,7 @@ void setup() {
     LED(HIGH);
 
     Serial.begin(115200);
+    Serial.println();
     tft.init();
     tft.setRotation(2);
     clearScreen(2); //start at top, font size 2
@@ -185,23 +186,14 @@ void printWeatherDisplay(){
     setTextSize(2);
     tft.println("\nhere");
 
-    setDebug(INFO);
-    waitForSync();
-    Timezone myTz;
-    //myTz.setLocation("America/Los_Angeles");
-    Serial.println(myTz.dateTime("d-M-y g:i A T"));
 
     time_t currentTime = (time_t)currentWeather.getTimeLong();
     Serial.println(currentTime);
-    Serial.println(myTz.dateTime(currentTime, "d-M-y g:i A T"));
+    struct tm *timeinfo;
+    time(&currentTime);
+    timeinfo = localtime(&currentTime);
+    Serial.println(asctime(timeinfo));
 
-    currentTime = (time_t)dailyWeather[0].getTimeLong();
-    Serial.println(currentTime);
-    Serial.println(myTz.dateTime(currentTime, "d-M-y g:i A T"));
-
-    currentTime = (time_t)dailyWeather[1].getTimeLong();
-    Serial.println(currentTime);
-    Serial.println(myTz.dateTime(currentTime, "d-M-y g:i A T"));
 }
 
 bool printWeatherSerial(){
