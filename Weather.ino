@@ -19,6 +19,7 @@
 //use fs::File for SPIFFS, sd::File for SD if needed
 #define FS_NO_GLOBALS
 #include <FS.h>
+#include <time.h>
 
 /* include a MiscSettings.h file for these defs
     #ifndef STASSID
@@ -177,12 +178,17 @@ void printWeatherDisplay(){
     clearScreen(2);
 
     tft.print("Currently: ");
-    tft.println(currentWeather.getTime());
+    tft.println(currentWeather.getTimeLong());
     printIcon(currentWeather.getIcon());
     tft.setCursor(tft.getCursorX()+48,tft.getCursorY(), 4);
     tft.println(currentWeather.getTemp());
     setTextSize(2);
     tft.println("\nhere");
+    time_t raw = currentWeather.getTimeLong();
+    struct tm * timeinfo;
+    time(&raw);
+    timeinfo = localtime(&raw);
+    tft.println(asctime(timeinfo));
 }
 
 bool printWeatherSerial(){
