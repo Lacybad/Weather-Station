@@ -186,14 +186,19 @@ void printWeatherDisplay(){
     setTextSize(2);
     tft.println("\nhere");
 
-
-    time_t currentTime = (time_t)currentWeather.getTimeLong();
+    time_t currentTime = (time_t)dailyWeather[0].getTimeLong();
     Serial.println(currentTime);
     struct tm *timeinfo;
-    time(&currentTime);
+    time(nullptr);
     timeinfo = localtime(&currentTime);
     Serial.println(asctime(timeinfo));
 
+    currentTime = (time_t)currentWeather.getTimeLong();
+    Serial.println(currentTime);
+    struct tm *timeinfo2;
+    time(nullptr);
+    timeinfo2 = localtime(&currentTime);
+    Serial.println(asctime(timeinfo2));
 }
 
 bool printWeatherSerial(){
