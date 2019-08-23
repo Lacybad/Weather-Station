@@ -19,8 +19,9 @@
 //use fs::File for SPIFFS, sd::File for SD if needed
 #define FS_NO_GLOBALS
 #include <FS.h>
-//#include <time.h>
-#include <ezTime.h>
+#include <Timezone.h>
+#include <Time.h>
+//#include <ezTime.h>
 
 /* include a MiscSettings.h file for these defs
     #ifndef STASSID
@@ -73,6 +74,9 @@ TFT_eSPI tft = TFT_eSPI(); //start library
 Weather currentWeather;
 Weather dailyWeather[3]; //weather for today, tomorrow, and day+1
 const int dailyWeatherSize = 3;
+TimeChangeRule daylightRule = {"PDT", Second, Sun, Mar, 2, -420};
+TimeChangeRule standardRule = {"PST", First, Sun, Nov, 2, -480};
+Timezone tz(daylightRule, standardRule);
 
 //display vars
 uint16_t cursorX;
@@ -193,7 +197,7 @@ void printWeatherDisplay(){
     time(nullptr);
     timeinfo = localtime(&currentTime);
     Serial.println(asctime(timeinfo));
-*/
+*//*
     setDebug(INFO);
     time_t currentTime = (time_t)currentWeather.getTimeLong();
     waitForSync(10); //sync new timezones, timeout 10 seconds
@@ -206,6 +210,15 @@ void printWeatherDisplay(){
     Serial.println(dateTime(currentTime, "m/d g:i A"));
     Serial.println(myTz.dateTime(currentTime, UTC_TIME, "m/d g:i A"));
     Serial.println(myTz.dateTime());
+*/
+    time_t currentTime = (time_t)currentWeather.getTimeLong();
+    TimeChangeRule *tcr;
+    time_t localTime = tz.toLocal(currentTime, &tcr);
+    Serial.print(hour(localTime));
+    Serial.print(":");
+    Serial.print(minute(localTime));
+    Serial.print(" ");
+    Serial.println(day(localTime));
 }
 
 bool printWeatherSerial(){
