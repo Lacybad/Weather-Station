@@ -202,7 +202,7 @@ void printWeatherDisplay(){
     Timezone myTz;
     myTz.setLocation("America/Los_Angeles");
     int16_t offset = myTz.getOffset(currentTime);
-    currentTime = currentTime - offset;
+    currentTime = currentTime - (offset*60);
     Serial.println(dateTime(currentTime, "m/d g:i A"));
     Serial.println(myTz.dateTime(currentTime, UTC_TIME, "m/d g:i A"));
     Serial.println(myTz.dateTime());
