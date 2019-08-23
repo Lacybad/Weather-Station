@@ -19,7 +19,8 @@
 //use fs::File for SPIFFS, sd::File for SD if needed
 #define FS_NO_GLOBALS
 #include <FS.h>
-#include <time.h>
+//#include <time.h>
+#include <ezTime.h>
 
 /* include a MiscSettings.h file for these defs
     #ifndef STASSID
@@ -185,20 +186,26 @@ void printWeatherDisplay(){
     tft.println(currentWeather.getTemp());
     setTextSize(2);
     tft.println("\nhere");
-
+/*
     time_t currentTime = (time_t)dailyWeather[0].getTimeLong();
     Serial.println(currentTime);
     struct tm *timeinfo;
     time(nullptr);
     timeinfo = localtime(&currentTime);
     Serial.println(asctime(timeinfo));
-
-    currentTime = (time_t)currentWeather.getTimeLong();
-    Serial.println(currentTime);
-    struct tm *timeinfo2;
-    time(nullptr);
-    timeinfo2 = localtime(&currentTime);
-    Serial.println(asctime(timeinfo2));
+*/
+    setDebug(INFO);
+    time_t currentTime = (time_t)currentWeather.getTimeLong();
+    waitForSync(10); //sync new timezones, timeout 10 seconds
+    setInterval(0); //no more syncing
+    Serial.println(dateTime(currentTime, "m/d g:i A"));
+    Timezone myTz;
+    myTz.setLocation("America/Los_Angeles");
+    int16_t offset = myTz.getOffset(currentTime);
+    currentTime = currentTime - offset;
+    Serial.println(dateTime(currentTime, "m/d g:i A"));
+    Serial.println(myTz.dateTime(currentTime, UTC_TIME, "m/d g:i A"));
+    Serial.println(myTz.dateTime());
 }
 
 bool printWeatherSerial(){
