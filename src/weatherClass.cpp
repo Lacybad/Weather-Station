@@ -31,7 +31,7 @@ bool Weather::setupWeather(JsonObject weatherData) {
         }
     }
 
-    timeLong = weatherData["time"];
+    time = weatherData["time"];
 
     icon = weatherData["icon"];
 
@@ -73,12 +73,8 @@ bool Weather::getSetup(){
     return setup;
 }
 
-long Weather::getTimeLong(){
-    return timeLong;
-}
-
-char* Weather::getTime(){
-    return *time;
+long Weather::getTime(){
+    return time;
 }
 
 const char* Weather::getIcon(){

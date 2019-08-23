@@ -13,8 +13,7 @@ class Weather {
     private:
         bool setup;
         bool daily;
-        long timeLong;
-        char *time[6];
+        long time;
         const char *icon;
         long sunriseTime;
         long sunsetTime;
@@ -32,8 +31,7 @@ class Weather {
         bool setupWeather(JsonObject weatherData);
         bool getSetup();
         bool isDaily();
-        long getTimeLong();
-        char* getTime();
+        long getTime();
         const char* getIcon();
         long getSunriseTime();
         long getSunsetTime();

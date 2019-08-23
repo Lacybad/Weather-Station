@@ -30,25 +30,13 @@
     #endif
     #define apikey "xxx"
     #define forecastLoc "/xx.xx,xx.xx"
+    #define daylightRuleConfig {"*DT", Second, Sun, Mar, 2, -XX0}
+    #define standardRuleConfig {"*ST", First, Sun, Nov, 2, -XX0}
 */
 /* Uncomment in <ArduinoLibrary>/TFT_eSPI/User_Setup.h
     #define ST7735_Driver
     #define ST7735_GREENTAB2
 */
-
-//function defs
-void LED(bool led_output);
-void setup();
-void loop();
-void getWeather();
-void printWeatherDisplay();
-bool printWeatherSerial();
-void printIcon(const char *icon);
-int checkWeatherIcon(const char *icon);
-void clearScreen(int textSize);
-void setTextSize(int textSize);
-void connectToWifi();
-void disconnectWifi();
 
 // Constant variables
 const char *ssid = STASSID;
@@ -65,22 +53,38 @@ const char *weatherIcon[] = {"clear-day", "clear-night", "rain", "snow",
     "sleet", "wind", "fog", "cloudy", "partly-cloudy-day", "partly-cloudy-night",
     "hail", "thunderstorm", "tornado", "na"};
 const int weatherIconSize = 14;
+
 //global variables
 BearSSL::WiFiClientSecure client;
-
 TFT_eSPI tft = TFT_eSPI(); //start library
 
 //weather variables
 Weather currentWeather;
 Weather dailyWeather[3]; //weather for today, tomorrow, and day+1
 const int dailyWeatherSize = 3;
-TimeChangeRule daylightRule = {"PDT", Second, Sun, Mar, 2, -420};
-TimeChangeRule standardRule = {"PST", First, Sun, Nov, 2, -480};
+TimeChangeRule daylightRule = daylightRuleConfig;
+TimeChangeRule standardRule = standardRuleConfig;
 Timezone tz(daylightRule, standardRule);
 
 //display vars
 uint16_t cursorX;
 uint16_t cursorY;
+char displayOutput[10];
+
+//function defs
+void LED(bool led_output);
+void setup();
+void loop();
+void getWeather();
+void printWeatherDisplay();
+void timeToLocal(time_t currentTime);
+bool printWeatherSerial();
+void printIcon(const char *icon);
+int checkWeatherIcon(const char *icon);
+void clearScreen(int textSize);
+void setTextSize(int textSize);
+void connectToWifi();
+void disconnectWifi();
 
 void LED(bool led_output){
     digitalWrite(LED_BUILTIN, !led_output); //need to flip the led
@@ -181,49 +185,29 @@ void getWeather() {
 }
 
 void printWeatherDisplay(){
-    clearScreen(2);
+    clearScreen(1);
 
     tft.print("Currently: ");
-    tft.println(currentWeather.getTimeLong());
+    timeToLocal(currentWeather.getTime()); //to displayOutput
+    tft.println(displayOutput);
     printIcon(currentWeather.getIcon());
     tft.setCursor(tft.getCursorX()+48,tft.getCursorY(), 4);
     tft.println(currentWeather.getTemp());
     setTextSize(2);
     tft.println("\nhere");
-/*
-    time_t currentTime = (time_t)dailyWeather[0].getTimeLong();
-    Serial.println(currentTime);
-    struct tm *timeinfo;
-    time(nullptr);
-    timeinfo = localtime(&currentTime);
-    Serial.println(asctime(timeinfo));
-*//*
-    setDebug(INFO);
-    time_t currentTime = (time_t)currentWeather.getTimeLong();
-    waitForSync(10); //sync new timezones, timeout 10 seconds
-    setInterval(0); //no more syncing
-    Serial.println(dateTime(currentTime, "m/d g:i A"));
-    Timezone myTz;
-    myTz.setLocation("America/Los_Angeles");
-    int16_t offset = myTz.getOffset(currentTime);
-    currentTime = currentTime - (offset*60);
-    Serial.println(dateTime(currentTime, "m/d g:i A"));
-    Serial.println(myTz.dateTime(currentTime, UTC_TIME, "m/d g:i A"));
-    Serial.println(myTz.dateTime());
-*/
-    time_t currentTime = (time_t)currentWeather.getTimeLong();
+}
+
+void timeToLocal(time_t currentTime){
     TimeChangeRule *tcr;
-    time_t localTime = tz.toLocal(currentTime, &tcr);
-    char output[10];
-    snprintf(output, sizeof(output), "%02d:%02d ",
-            hourFormat12(localTime), minute(localTime));
-    if (isAM(localTime) ){
-        strncat(output,"AM", 2);
+    currentTime = tz.toLocal(currentTime, &tcr);
+    snprintf(displayOutput, sizeof(displayOutput), "%02d:%02d ",
+            hourFormat12(currentTime), minute(currentTime));
+    if (isAM(currentTime)){
+        strncat(displayOutput,"AM", 2);
     }
     else {
-        strncat(output, "PM", 2);
+        strncat(displayOutput, "PM", 2);
     }
-    Serial.println(output);
 }
 
 bool printWeatherSerial(){
