@@ -49,10 +49,12 @@ const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_S
 const String forecastType = "/forecast/";
 //const String forecastLoc //see define location
 const String forecastDetails = "?exclude=minutely,hourly,flags";
+#define sunrise_icon "sunsrise"
+#define sunset_icon "sunset"
 const char *weatherIcon[] = {"clear-day", "clear-night", "rain", "snow",
     "sleet", "wind", "fog", "cloudy", "partly-cloudy-day", "partly-cloudy-night",
-    "hail", "thunderstorm", "tornado", "na"};
-const int weatherIconSize = 14;
+    "hail", "thunderstorm", "tornado", sunrise_icon, sunset_icon, "na"};
+const int weatherIconSize = 16;
 
 //global variables
 BearSSL::WiFiClientSecure client;
@@ -187,14 +189,24 @@ void getWeather() {
 void printWeatherDisplay(){
     clearScreen(1);
 
+    //current weather
     tft.print("Currently: ");
     timeToLocal(currentWeather.getTime()); //to displayOutput
     tft.println(displayOutput);
     printIcon(currentWeather.getIcon());
     tft.setCursor(tft.getCursorX()+48,tft.getCursorY(), 4);
     tft.println(currentWeather.getTemp());
-    setTextSize(2);
-    tft.println("\nhere");
+    tft.println("");
+    setTextSize(1);
+    printIcon(sunrise_icon);
+    timeToLocal(dailyWeather[0].getSunriseTime()); //to displayOutput
+    tft.println(displayOutput);
+    printIcon(sunset_icon);
+    timeToLocal(dailyWeather[0].getSunsetTime()); //to displayOutput
+    tft.println(displayOutput);
+
+    //next day forecast
+
 }
 
 void timeToLocal(time_t currentTime){
@@ -244,7 +256,6 @@ void printIcon(const char *icon){
     strcat(temp, ".bmp");
 
     drawBmp(temp, 0, tft.getCursorY());
-    delay(1000);
 }
 
 //can not edit input
