@@ -190,7 +190,7 @@ void printWeatherDisplay(){
     clearScreen(1);
 
     //current weather
-    tft.print("Currently: ");
+    tft.print("Updated: ");
     timeToLocal(currentWeather.getTime()); //to displayOutput
     tft.println(displayOutput);
     printIcon(currentWeather.getIcon());
@@ -204,9 +204,35 @@ void printWeatherDisplay(){
     printIcon(sunset_icon);
     timeToLocal(dailyWeather[0].getSunsetTime()); //to displayOutput
     tft.println(displayOutput);
+    tft.print("Rain:");
+    tft.print(dailyWeather[0].getPrecipProb()*100);
+    tft.println("%");
 
     //next day forecast
+    tft.print("Tomorrow");
+    tft.setCursor(tft.getCursorX()+5, tft.getCursorY(), 2);
+    tft.println("Next day");
+    printIcon(dailyWeather[1].getIcon());
+    tft.setCursor(48,tft.getCursorY());
+    tft.print(dailyWeather[1].getTempHigh());
+    tft.print(" / ");
+    tft.print(dailyWeather[1].getTempLow());
 
+    printIcon(dailyWeather[2].getIcon());
+    tft.setCursor(100,tft.getCursorY());
+    tft.print(dailyWeather[2].getTempHigh());
+    tft.print(" / ");
+    tft.println(dailyWeather[2].getTempLow());
+
+    tft.setCursor(48,tft.getCursorY());
+    tft.print("Rain:");
+    tft.print(dailyWeather[1].getPrecipProb()*100);
+    tft.println("%");
+
+    tft.setCursor(100,tft.getCursorY());
+    tft.print("Rain:");
+    tft.print(dailyWeather[2].getPrecipProb()*100);
+    tft.println("%");
 }
 
 void timeToLocal(time_t currentTime){

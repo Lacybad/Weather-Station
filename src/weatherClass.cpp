@@ -89,6 +89,10 @@ long Weather::getSunsetTime(){
     return sunsetTime;
 }
 
+float Weather::getPrecipProb(){
+    return precipProbability;
+}
+
 int Weather::getTemp(){
     return temperature;
 }
