@@ -20,7 +20,7 @@
 #define FS_NO_GLOBALS
 #include <FS.h>
 #include <Timezone.h>
-#include <Time.h>
+#include <TimeLib.h>
 //#include <ezTime.h>
 
 /* include a MiscSettings.h file for these defs
@@ -214,11 +214,16 @@ void printWeatherDisplay(){
     time_t currentTime = (time_t)currentWeather.getTimeLong();
     TimeChangeRule *tcr;
     time_t localTime = tz.toLocal(currentTime, &tcr);
-    Serial.print(hour(localTime));
-    Serial.print(":");
-    Serial.print(minute(localTime));
-    Serial.print(" ");
-    Serial.println(day(localTime));
+    char output[10];
+    snprintf(output, sizeof(output), "%02d:%02d ",
+            hourFormat12(localTime), minute(localTime));
+    if (isAM(localTime) ){
+        strncat(output,"AM", 2);
+    }
+    else {
+        strncat(output, "PM", 2);
+    }
+    Serial.println(output);
 }
 
 bool printWeatherSerial(){
