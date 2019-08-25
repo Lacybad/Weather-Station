@@ -17,7 +17,7 @@ class Weather {
         const char *icon;
         long sunriseTime;
         long sunsetTime;
-        float precipProbability;
+        int precipProbability;
         float temperatureLong;
         int temperature;
         float temperatureHighLong;
@@ -35,7 +35,7 @@ class Weather {
         const char* getIcon();
         long getSunriseTime();
         long getSunsetTime();
-        float getPrecipProb();
+        int getPrecipProb();
         int getTemp();
         int getTempHigh();
         int getTempLow();

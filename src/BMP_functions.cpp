@@ -15,7 +15,7 @@ void drawBmp(const char *filename, int16_t x, int16_t y) {
 
   if (!bmpFS)
   {
-    Serial.print("File not found");
+    Serial.println("File not found");
     return;
   }
 

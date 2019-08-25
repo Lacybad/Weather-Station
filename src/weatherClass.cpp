@@ -45,7 +45,8 @@ bool Weather::setupWeather(JsonObject weatherData) {
         sunsetTime = 0;
     }
 
-    precipProbability = weatherData["precipProbability"];
+    float tempPrecip = weatherData["precipProbability"];
+    precipProbability = (int)(100*tempPrecip);
 
     //temperature
     if(daily){
@@ -89,7 +90,7 @@ long Weather::getSunsetTime(){
     return sunsetTime;
 }
 
-float Weather::getPrecipProb(){
+int Weather::getPrecipProb(){
     return precipProbability;
 }
 

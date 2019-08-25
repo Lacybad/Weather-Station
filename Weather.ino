@@ -15,6 +15,9 @@
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include "src/BMP_functions.h"
+#define large_icon 48
+#define small_icon 24
+#define time_icon 8     //size of time XX:XX XM
 //file system
 //use fs::File for SPIFFS, sd::File for SD if needed
 #define FS_NO_GLOBALS
@@ -49,7 +52,7 @@ const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_S
 const String forecastType = "/forecast/";
 //const String forecastLoc //see define location
 const String forecastDetails = "?exclude=minutely,hourly,flags";
-#define sunrise_icon "sunsrise"
+#define sunrise_icon "sunrise"
 #define sunset_icon "sunset"
 const char *weatherIcon[] = {"clear-day", "clear-night", "rain", "snow",
     "sleet", "wind", "fog", "cloudy", "partly-cloudy-day", "partly-cloudy-night",
@@ -194,44 +197,50 @@ void printWeatherDisplay(){
     timeToLocal(currentWeather.getTime()); //to displayOutput
     tft.println(displayOutput);
     printIcon(currentWeather.getIcon());
-    tft.setCursor(tft.getCursorX()+48,tft.getCursorY(), 4);
-    tft.println(currentWeather.getTemp());
-    tft.println("");
+    tft.setCursor(tft.getCursorX()+large_icon,tft.getCursorY(), 4);
+    tft.print(currentWeather.getTemp());
+    tft.drawCircle(tft.getCursorX()+2,tft.getCursorY(), 2, TFT_WHITE); //degree symbol
+    tft.println("F");
+    tft.setCursor(tft.getCursorX()+large_icon,tft.getCursorY(), 2);
+    tft.print("Rain: ");
+    tft.print(dailyWeather[0].getPrecipProb());
+    tft.println("%");
+
     setTextSize(1);
     printIcon(sunrise_icon);
+    tft.setCursor(small_icon, tft.getCursorY());
     timeToLocal(dailyWeather[0].getSunriseTime()); //to displayOutput
     tft.println(displayOutput);
     printIcon(sunset_icon);
+    tft.setCursor(small_icon*2+time_icon, tft.getCursorY());
     timeToLocal(dailyWeather[0].getSunsetTime()); //to displayOutput
     tft.println(displayOutput);
-    tft.print("Rain:");
-    tft.print(dailyWeather[0].getPrecipProb()*100);
-    tft.println("%");
 
     //next day forecast
-    tft.print("Tomorrow");
+    setTextSize(2);
+    tft.print(dayShortStr(weekday(dailyWeather[1].getTime())));
     tft.setCursor(tft.getCursorX()+5, tft.getCursorY(), 2);
-    tft.println("Next day");
+    tft.print(dayShortStr(weekday(dailyWeather[2].getTime())));
     printIcon(dailyWeather[1].getIcon());
-    tft.setCursor(48,tft.getCursorY());
+    tft.setCursor(large_icon,tft.getCursorY());
     tft.print(dailyWeather[1].getTempHigh());
     tft.print(" / ");
     tft.print(dailyWeather[1].getTempLow());
 
     printIcon(dailyWeather[2].getIcon());
-    tft.setCursor(100,tft.getCursorY());
+    tft.setCursor(large_icon*2,tft.getCursorY());
     tft.print(dailyWeather[2].getTempHigh());
     tft.print(" / ");
     tft.println(dailyWeather[2].getTempLow());
 
-    tft.setCursor(48,tft.getCursorY());
+    tft.setCursor(large_icon,tft.getCursorY());
     tft.print("Rain:");
-    tft.print(dailyWeather[1].getPrecipProb()*100);
+    tft.print(dailyWeather[1].getPrecipProb());
     tft.println("%");
 
-    tft.setCursor(100,tft.getCursorY());
+    tft.setCursor(large_icon*2,tft.getCursorY());
     tft.print("Rain:");
-    tft.print(dailyWeather[2].getPrecipProb()*100);
+    tft.print(dailyWeather[2].getPrecipProb());
     tft.println("%");
 }
 
@@ -281,6 +290,7 @@ void printIcon(const char *icon){
     strcat(temp, weatherIcon[iconNum]);
     strcat(temp, ".bmp");
 
+    Serial.println(temp);
     drawBmp(temp, 0, tft.getCursorY());
 }
 
