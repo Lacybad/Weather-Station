@@ -243,6 +243,96 @@ void printWeatherDisplay(){
     tft.println("%");
 }
 
+void printWeatherDisplay(){
+    clearScreen(1);
+    uint16_t iconY;
+    uint16_t iconX;
+
+    //current weather
+    tft.print("Updated: ");
+    tft.println("XX:XX XM");
+    iconY = tft.getCursorY();
+    printIcon("clear-day");
+    tft.setCursor(tft.getCursorX()+LARGE_ICON,tft.getCursorY()+2, 4);
+    tft.print("100");
+    tft.drawCircle(tft.getCursorX()+4,tft.getCursorY()+2, 2, TFT_WHITE); //degree symbol
+    tft.setCursor(tft.getCursorX()+10,tft.getCursorY(), 2);
+    tft.println("F");
+
+    tft.setCursor(tft.getCursorX()+LARGE_ICON+4,tft.getCursorY()+4,2);
+    tft.print("100");
+    tft.print(" / ");
+    tft.println("-10");
+    tft.setCursor(tft.getCursorX()+LARGE_ICON+4,tft.getCursorY() - 2, 2);
+    tft.print("Rain: ");
+    tft.print("100");
+    tft.println("%");
+
+    cursorY = tft.getCursorY();
+    tft.setCursor(2,cursorY,1);
+    tft.print("06:XX AM");
+    tft.setCursor(64-(SMALL_ICON >> 1),cursorY); //divide 2
+/*    if (time < sunrise || time > sunset){
+        printIcon(SUNRISE_ICON);
+        iconX = 0;
+    }
+    else {
+        printIcon(SUNSET_ICON);
+        iconX = 64 + SMALL_ICON/2;
+    } */
+    printIcon(SUNSET_ICON);
+
+    tft.setCursor(64+(SMALL_ICON >> 1), cursorY);
+    tft.println("10:XX PM");
+    iconX = 64 + (SMALL_ICON >> 1); //divide by 2
+    tft.drawFastHLine(iconX, tft.getCursorY()+2, tft.width() - iconX - 2, TFT_WHITE);
+    tft.setCursor(tft.getCursorX(), tft.getCursorY()+6);
+
+    tft.drawFastVLine((tft.width() >> 1) - 1, tft.getCursorY() + (SMALL_ICON >> 1),
+            tft.height() - tft.getCursorY() - 4, TFT_DARKGREY);
+    //next day forecast
+    iconY = tft.getCursorY();
+
+    tft.setCursor(8,tft.getCursorY() + 8);
+    printIcon("rain");
+    tft.setCursor(64+8,tft.getCursorY());
+    printIcon("snow");
+    cursorY = tft.getCursorY();
+
+    tft.setCursor(20, iconY, 2);
+    tft.print("Mon");
+    tft.setCursor(64+20, tft.getCursorY());
+    tft.println("Tue");
+
+
+    tft.setCursor(4,tft.getCursorY() + LARGE_ICON - 12);
+    tft.print("100");
+    tft.print("/");
+    tft.print("-10");
+
+    tft.setCursor(64+4,tft.getCursorY());
+    tft.print("100");
+    tft.print("/");
+    tft.println("-10");
+
+    tft.setCursor(2,tft.getCursorY(),1);
+    tft.print("Rain:");
+    tft.setCursor(tft.getCursorX()+2,tft.getCursorY());
+    tft.print("100");
+    tft.print("%");
+
+    tft.setCursor(64+2,tft.getCursorY());
+    tft.print("Rain:");
+    tft.setCursor(tft.getCursorX()+2,tft.getCursorY());
+    tft.print("100");
+    tft.println("%");
+
+    tft.setCursor(2,tft.getCursorY());
+    tft.print(" Hum: 100%");
+    tft.setCursor(64+2,tft.getCursorY());
+    tft.print(" Hum: 100%");
+}
+
 void timeToLocal(time_t currentTime){
     TimeChangeRule *tcr;
     currentTime = tz.toLocal(currentTime, &tcr);
