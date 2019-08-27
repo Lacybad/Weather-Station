@@ -22,8 +22,9 @@ DATA = data
 
 #Weather Images
 WI = weather-icons/svg
-#Flags - make density large, then resize, flip colors, set 24 bit color
-WIFLAG_COLOR = -channel RGB -negate  -type truecolor
+#Flags - reduce border, flip colors, set 24 bit color
+WIFLAG_COLOR = -shave 2x2 -channel RGB -negate -type truecolor
+#Flags - large density before resizing
 WIFLAG_LARGE = -density 200 -resize 48x48 $(WIFLAG_COLOR)
 WIFLAG_SMALL = -density 200 -resize 24x24 $(WIFLAG_COLOR)
 

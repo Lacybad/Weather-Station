@@ -227,10 +227,10 @@ void printWeatherDisplay(){
     tft.println("%");
 
     cursorY = tft.getCursorY() - 1;
-    tft.setCursor(2,cursorY,1);
+    tft.setCursor(2,cursorY+1,1);
     timeToLocal(dailyWeather[0].getSunriseTime());
     tft.println(displayOutput);
-    tft.setCursor(64-(SMALL_ICON >> 1), cursorY - 3); //divide 2
+    tft.setCursor(64-(SMALL_ICON >> 1), cursorY); //divide 2
     if (currentWeather.getTime() < dailyWeather[0].getSunriseTime() ||
             currentWeather.getTime() > dailyWeather[0].getSunsetTime()){
         printIcon(SUNRISE_ICON);
@@ -378,7 +378,7 @@ void setTextSize(int textSize){
 void connectToWifi(){
     tft.println("Powered by\nDark Sky");
     WiFi.forceSleepWake(); delay(1);
-    Serial.print("\nConnecting to ");
+    Serial.print("Connecting to ");
     Serial.println(ssid);
     tft.println("Connecting to:");
     tft.println(ssid);
