@@ -24,7 +24,7 @@ class Weather {
         int temperatureHigh;
         float temperatureLowLong;
         int temperatureLow;
-        float humidity;
+        int humidity;
 
     public:
         Weather();
@@ -39,7 +39,7 @@ class Weather {
         int getTemp();
         int getTempHigh();
         int getTempLow();
-        float getHumidity();
+        int getHumidity();
 };
 
 #endif
