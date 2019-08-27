@@ -4,3 +4,6 @@ MiscSettings.h
 data/
 weather-icons/
 tags
+*.bak
+*.bck
+*.000
