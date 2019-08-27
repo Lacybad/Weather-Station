@@ -12,8 +12,12 @@ ESP_TAG = tags.esp8266_lib
 PRJ_TAG = tags.ino
 TAG_FLAGS = --langmap=c++:.cpp.ino.pde.h.hpp --languages=C++
 
-ARDUINO_INO_FILE = Weather
-SRC = $(ARDUINO_INO_FILE).ino
+ifneq ($(wildcard *.ino).ino,)
+ARDUINO_INO_FILE = $(wildcard *.ino)
+else
+ARDUINO_INO_FILE = Weather.ino
+endif
+SRC = $(ARDUINO_INO_FILE)
 DATA = data
 
 #Weather Images
