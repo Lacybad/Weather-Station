@@ -12,7 +12,7 @@
 #include "src/weatherClass.h"
 #include "MiscSettings.h"
 //display
-#include <TFT_eSPI.h>
+#include <TFT_eSPI.h> //D4=RST,D8=CS,D3=A0/DC,D7=SDA,D5=SCL
 #include <SPI.h>
 #include "src/BMP_functions.h"
 #define large_icon 48
@@ -24,7 +24,6 @@
 #include <FS.h>
 #include <Timezone.h>
 #include <TimeLib.h>
-//#include <ezTime.h>
 
 /* include a MiscSettings.h file for these defs
     #ifndef STASSID
