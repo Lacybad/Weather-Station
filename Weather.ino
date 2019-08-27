@@ -195,63 +195,6 @@ bool getWeather() {
     return true;
 }
 
-void printWeatherDisplay2(){
-    clearScreen(1);
-
-    //current weather
-    Serial.println("Updated");
-    tft.print("Updated: ");
-    timeToLocal(currentWeather.getTime()); //to displayOutput
-    tft.println(displayOutput);
-    printIcon(currentWeather.getIcon());
-    tft.setCursor(tft.getCursorX()+LARGE_ICON,tft.getCursorY(), 4);
-    tft.print(currentWeather.getTemp());
-    tft.drawCircle(tft.getCursorX()+2,tft.getCursorY(), 2, TFT_WHITE); //degree symbol
-    tft.println("F");
-    tft.setCursor(tft.getCursorX()+LARGE_ICON,tft.getCursorY(), 2);
-    tft.print("Rain: ");
-    tft.print(dailyWeather[0].getPrecipProb());
-    tft.println("%");
-
-    setTextSize(1);
-    printIcon(SUNRISE_ICON);
-    tft.setCursor(SMALL_ICON, tft.getCursorY());
-    timeToLocal(dailyWeather[0].getSunriseTime()); //to displayOutput
-    tft.println(displayOutput);
-    printIcon(SUNSET_ICON);
-    tft.setCursor(SMALL_ICON*2+TIME_ICON, tft.getCursorY());
-    timeToLocal(dailyWeather[0].getSunsetTime()); //to displayOutput
-    tft.println(displayOutput);
-
-    //next day forecast
-    Serial.println("Next Day");
-    setTextSize(2);
-    tft.print(dayShortStr(weekday(dailyWeather[1].getTime())));
-    tft.setCursor(tft.getCursorX()+5, tft.getCursorY(), 2);
-    tft.print(dayShortStr(weekday(dailyWeather[2].getTime())));
-    printIcon(dailyWeather[1].getIcon());
-    tft.setCursor(LARGE_ICON,tft.getCursorY());
-    tft.print(dailyWeather[1].getTempHigh());
-    tft.print(" / ");
-    tft.print(dailyWeather[1].getTempLow());
-
-    printIcon(dailyWeather[2].getIcon());
-    tft.setCursor(LARGE_ICON*2,tft.getCursorY());
-    tft.print(dailyWeather[2].getTempHigh());
-    tft.print(" / ");
-    tft.println(dailyWeather[2].getTempLow());
-
-    tft.setCursor(LARGE_ICON,tft.getCursorY());
-    tft.print("Rain:");
-    tft.print(dailyWeather[1].getPrecipProb());
-    tft.println("%");
-
-    tft.setCursor(LARGE_ICON*2,tft.getCursorY());
-    tft.print("Rain:");
-    tft.print(dailyWeather[2].getPrecipProb());
-    tft.println("%");
-}
-
 void printWeatherDisplay(){
     clearScreen(1);
     uint16_t iconY;
