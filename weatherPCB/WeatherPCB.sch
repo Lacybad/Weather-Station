@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:WeatherPCB-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
@@ -14,7 +15,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L wemos_mini:WeMos_mini U?
+L WeatherPCB-rescue:WeMos_mini-wemos_mini U?
 U 1 1 5D654E45
 P 3200 3500
 F 0 "U?" H 3200 4000 60  0000 C CNN
@@ -25,7 +26,7 @@ F 3 "https://wiki.wemos.cc/_media/products:d1:sch_d1_mini_v3.0.0.pdf" H 3200 403
 	1    0    0    -1  
 $EndComp
 $Comp
-L WeatherPCB_Components:TFTLCD_ST7735R U?
+L WeatherPCB-rescue:TFTLCD_ST7735R-WeatherPCB_Components U?
 U 1 1 5D6562B8
 P 1550 3400
 F 0 "U?" H 1525 3965 50  0000 C CNN

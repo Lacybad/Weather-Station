@@ -1,4 +1,5 @@
 (sym_lib_table
   (lib (name WeatherPCB_Components)(type Legacy)(uri /home/miles/Documents/Arduino/Weather/WeatherPCB/WeatherPCB_Components.lib)(options "")(descr ""))
   (lib (name wemos_mini)(type Legacy)(uri /home/miles/Documents/Arduino/Weather/WeatherPCB/d1_mini_kicad/library/wemos_mini.lib)(options "")(descr ""))
+  (lib (name WeatherPCB-rescue)(type Legacy)(uri ${KIPRJMOD}/WeatherPCB-rescue.lib)(options "")(descr ""))
 )

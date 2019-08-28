@@ -1,11 +1,11 @@
 EESchema-LIBRARY Version 2.4
 #encoding utf-8
 #
-# WeatherPCB_Components_TFTLCD_ST7735R
+# WeatherPCB-rescue_TFTLCD_ST7735R-WeatherPCB_Components
 #
-DEF WeatherPCB_Components_TFTLCD_ST7735R U 0 40 Y Y 1 F N
+DEF WeatherPCB-rescue_TFTLCD_ST7735R-WeatherPCB_Components U 0 40 Y Y 1 F N
 F0 "U" -50 450 50 H V C CNN
-F1 "WeatherPCB_Components_TFTLCD_ST7735R" -100 350 50 H V C CNN
+F1 "WeatherPCB-rescue_TFTLCD_ST7735R-WeatherPCB_Components" -100 350 50 H V C CNN
 F2 "" 400 400 50 H I C CNN
 F3 "" 400 400 50 H I C CNN
 F4 "https://www.amazon.com/HiLetgo-ST7735R-128160-Display-Arduino/dp/B00LSG51MM" 350 850 50 H I C CNN "Where to Buy"
@@ -30,11 +30,11 @@ X LCD_SCL 9 600 -200 200 L 50 50 1 1 I
 ENDDRAW
 ENDDEF
 #
-# wemos_mini_WeMos_mini
+# WeatherPCB-rescue_WeMos_mini-wemos_mini
 #
-DEF wemos_mini_WeMos_mini U 0 40 Y Y 1 F N
+DEF WeatherPCB-rescue_WeMos_mini-wemos_mini U 0 40 Y Y 1 F N
 F0 "U" 0 500 60 H V C CNN
-F1 "wemos_mini_WeMos_mini" 0 -500 60 H V C CNN
+F1 "WeatherPCB-rescue_WeMos_mini-wemos_mini" 0 -500 60 H V C CNN
 F2 "" 550 -700 60 H V C CNN
 F3 "" 550 -700 60 H V C CNN
 DRAW
