@@ -15,12 +15,6 @@
 #include <TFT_eSPI.h> //D4=RST,D8=CS,D3=A0/DC,D7=SDA,D5=SCL
 #include <SPI.h>
 #include "src/BMP_functions.h"
-#define DP_W 128        //display used, need to change if using different size
-#define DP_HALF_W (DP_W >> 1)
-#define DP_H 160
-#define LARGE_ICON 44
-#define SMALL_ICON 20
-#define TIME_ICON 8     //size of time XX:XX XM
 //file system
 //use fs::File for SPIFFS, sd::File for SD if needed
 #define FS_NO_GLOBALS
@@ -42,6 +36,17 @@
     #define ST7735_Driver
     #define ST7735_GREENTAB2
 */
+//display constants
+#define DP_W 128        //display used, need to change if using different size
+#define DP_HALF_W (DP_W >> 1)
+#define DP_H 160
+#define LARGE_ICON 44
+#define SMALL_ICON 20
+#define TIME_ICON 8     //size of time XX:XX XM
+#define FS1 8           //font size height 1
+#define FS2 16
+#define FS4 26          //could be 32
+//FS6=48, FS7=56/48, FS8=56/75  //either or
 
 // Constant variables
 const char *ssid = STASSID;
