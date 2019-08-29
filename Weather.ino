@@ -40,8 +40,8 @@
 #define DP_W 128        //display used, need to change if using different size
 #define DP_HALF_W (DP_W >> 1)
 #define DP_H 160
-#define LARGE_ICON 44
-#define SMALL_ICON 20
+#define LARGE_ICON 48
+#define SMALL_ICON 24
 #define TIME_ICON 8     //size of time XX:XX XM
 #define FS1 8           //font size height 1
 #define FS2 16
@@ -213,12 +213,12 @@ void printWeatherDisplay(){
     int tempVal = 0;
 
     //current weather
-    tft.setCursor(tft.getCursorX()+4,tft.getCursorY());
+    tft.setCursor(tft.getCursorX()+1,tft.getCursorY());
     tft.print("Updated: ");
     timeToLocal(currentWeather.getTime());
     tft.println(displayOutput);
     cursorY = tft.getCursorY() + 2;
-    tft.setCursor((DP_HALF_W - LARGE_ICON)>>1,tft.getCursorY()+4);
+    tft.setCursor((DP_HALF_W - LARGE_ICON)>>1,tft.getCursorY());
     printIcon(currentWeather.getIcon());
 
     //Current Temp
@@ -262,37 +262,37 @@ void printWeatherDisplay(){
     tft.println(displayOutput);
     cursorY = tft.getCursorY();
 
-    tft.setCursor(DP_HALF_W-(SMALL_ICON >> 1), cursorY-2); //divide 2
+    tft.setCursor(DP_HALF_W-(SMALL_ICON>>1), cursorY-(SMALL_ICON>>1)); //divide 2
+    Serial.println(currentWeather.getTime());
+    Serial.println(dailyWeather[0].getSunriseTime());
+    Serial.println(dailyWeather[0].getSunsetTime());
     if (currentWeather.getTime() < dailyWeather[0].getSunriseTime() ||
             currentWeather.getTime() > dailyWeather[0].getSunsetTime()){
         printIcon(SUNRISE_ICON);
-        iconX = 0 + 4;
+        tft.drawLine(8, cursorY, DP_HALF_W - (SMALL_ICON>>1) - 4, cursorY, TFT_WHITE);
     }
     else {
         printIcon(SUNSET_ICON);
-        iconX = DP_HALF_W + SMALL_ICON>>1 + 8;
+        tft.drawLine(DP_HALF_W+(SMALL_ICON>>1) + 4, cursorY, DP_W - 8, cursorY, TFT_WHITE);
     }
 
-    tft.drawLine(iconX, cursorY, iconX + LARGE_ICON + 2, cursorY, TFT_WHITE);
     tft.setCursor(tft.getCursorX(), tft.getCursorY()+6);
 
     //next day forecast
-    tft.drawFastVLine((tft.width() >> 1) - 1, tft.getCursorY() + (SMALL_ICON>>1) - 4,
-            tft.height() - tft.getCursorY() - (SMALL_ICON >> 1), TFT_DARKGREY);
-    iconY = tft.getCursorY()-3;
+    cursorY = FS1 + FS4 + (FS2<<1) + FS1 + FS2 - 2;
+    tft.drawLine(DP_HALF_W - 1, cursorY - FS1, DP_HALF_W - 1, DP_H - 10, TFT_DARKGREY);
 
-    tft.setCursor(8,tft.getCursorY() + 8);
+    tft.setCursor(8,cursorY);
     printIcon(dailyWeather[1].getIcon());
     tft.setCursor(DP_HALF_W+8,tft.getCursorY());
     printIcon(dailyWeather[2].getIcon());
-    cursorY = tft.getCursorY();
 
-    tft.setCursor(20, iconY, 2);
+    tft.setCursor(20, cursorY - FS2, 2);
     tft.print(dayShortStr(weekday(dailyWeather[1].getTime())));
     tft.setCursor(DP_HALF_W+20, tft.getCursorY());
     tft.print(dayShortStr(weekday(dailyWeather[2].getTime())));
 
-    tft.setCursor(4,tft.getCursorY() + LARGE_ICON + 2);
+    tft.setCursor(4,cursorY + LARGE_ICON - FS2 + 4);
     tft.print(dailyWeather[1].getTempHigh());
     tft.print("/");
     tft.print(dailyWeather[1].getTempLow());
@@ -432,17 +432,16 @@ void connectToWifi(){
     WiFi.mode(WIFI_STA); delay(1);
     WiFi.begin(ssid, password);
 
-    //151
-    int i = 1;
-    cursorY = tft.getCursorY();
+    uint8_t i = 0;
     tft.setCursor(0,152,1);
+    cursorY = tft.getCursorY();
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
-        if (i == 25 +1) {
+        if ( (i%20) == 0) {
             tft.drawString("                    ", 0, cursorY);
             tft.setCursor(0,152,1);
-            i = 1;
         }
+        i++;
         if ( (i%5) == 0){
             Serial.print("|");
             tft.print("|");
@@ -451,7 +450,6 @@ void connectToWifi(){
             Serial.print(".");
             tft.print(".");
         }
-        i++;
     }
 
     tft.setCursor(0,cursorY,2);

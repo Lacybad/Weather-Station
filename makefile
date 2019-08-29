@@ -23,10 +23,12 @@ DATA = data
 #Weather Images
 WI = weather-icons/svg
 #Flags - reduce border, flip colors, set 24 bit color
-WIFLAG_COLOR = -shave 2x2 -channel RGB -negate -type truecolor
-#Flags - large density before resizing
-WIFLAG_LARGE = -density 200 -resize 48x48 $(WIFLAG_COLOR)
-WIFLAG_SMALL = -density 200 -resize 24x24 $(WIFLAG_COLOR)
+WIFLAG_COLOR = -channel RGB -negate -type truecolor
+#Flags - trim outsides, set center for image
+WIFLAG_CROP = -background white -gravity center
+#Flags - resize to box
+WIFLAG_LARGE = -trim -resize 48x48 $(WIFLAG_CROP) -extent 48x48 $(WIFLAG_COLOR)
+WIFLAG_SMALL = -trim -resize 24x24 $(WIFLAG_CROP) -extent 24x24 $(WIFLAG_COLOR)
 
 default: upload
 
