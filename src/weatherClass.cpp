@@ -64,7 +64,7 @@ bool Weather::setupWeather(JsonObject weatherData) {
     temperatureLow = round(temperatureLowLong);
 
     float humidityLong = weatherData["humidity"];
-    humidity = round(humidityLong);
+    humidity = (int)round(100*humidityLong);
 
     setup = true;
     return true;

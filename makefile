@@ -27,8 +27,10 @@ WIFLAG_COLOR = -channel RGB -negate -type truecolor
 #Flags - trim outsides, set center for image
 WIFLAG_CROP = -background white -gravity center
 #Flags - resize to box
-WIFLAG_LARGE = -trim -resize 48x48 $(WIFLAG_CROP) -extent 48x48 $(WIFLAG_COLOR)
-WIFLAG_SMALL = -trim -resize 24x24 $(WIFLAG_CROP) -extent 24x24 $(WIFLAG_COLOR)
+WI_L = 44x44
+WI_S = 20x20
+WIFLAG_LARGE = -trim -resize $(WI_L) $(WIFLAG_CROP) -extent $(WI_L) $(WIFLAG_COLOR)
+WIFLAG_SMALL = -trim -resize $(WI_S) $(WIFLAG_CROP) -extent $(WI_S) $(WIFLAG_COLOR)
 
 default: upload
 
