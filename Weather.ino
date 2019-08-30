@@ -8,9 +8,9 @@
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include "src/weatherClass.h"
-#include "MiscSettings.h"
+#include "MiscSettings.h" //D4=BUILTIN_LED,not RST
 //display
-#include <TFT_eSPI.h> //D4=RST,D8=CS,D3=A0/DC,D7=SDA,D5=SCL
+#include <TFT_eSPI.h> //!!D6=RST!!,D8=CS,D3=A0/DC,D7=SDA,D5=SCL
 #include <SPI.h>
 #include "src/BMP_functions.h"
 //file system
