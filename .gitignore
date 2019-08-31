@@ -14,3 +14,4 @@ tags
 *.net
 *.log
 sym-lib-table
+*-cache.lib

@@ -1,0 +1,4 @@
+https://www.desmos.com/calculator/svxpvmprhs
+
+Note: https://wiki.wemos.cc/_media/products:d1:mini_new_v2_2_0.pdf
+Wemos D1 mini has a 1.0V ADC, but on A0 has a voltage divider (220k and 100k) to 1.03V
