@@ -14,6 +14,7 @@
 #include <TFT_eSPI.h> //!!D6=RST!!,!!D0=A0/DC!!,D8=CS,D7=SDA,D5=SCL
 #include <SPI.h>
 #include "src/BMP_functions.h"
+#include <Ticker.h> //timer interrupts for brightness
 //file system
 //use fs::File for SPIFFS, sd::File for SD if needed
 #define FS_NO_GLOBALS
@@ -46,6 +47,9 @@
 #define FS2 16
 #define FS4 26          //could be 32
 //FS6=48, FS7=56/48, FS8=56/75  //either or
+#define pwmRange 16     //16 bits
+#define pwmFreq 1000      //1kHz frequency
+#define pwmOut D3       //output pin for brightness
 
 // Constant variables
 const char *ssid = STASSID;
@@ -68,6 +72,7 @@ const int weatherIconSize = 16;
 //global variables
 BearSSL::WiFiClientSecure client;
 TFT_eSPI tft = TFT_eSPI(); //start library
+Ticker tftBrightness;
 
 //weather variables
 Weather currentWeather;
@@ -82,9 +87,12 @@ bool haveSetup = false;
 uint16_t cursorX;
 uint16_t cursorY;
 char displayOutput[10];
+volatile uint16_t rawBrightness;
+volatile uint8_t newBrightness;
 
 //function defs
 void LED(bool led_output);
+void updateBrightness();
 void setup();
 void loop();
 bool getWeather();
@@ -104,12 +112,28 @@ void LED(bool led_output){
     digitalWrite(LED_BUILTIN, !led_output); //need to flip the led
 }
 
+void updateBrightness(){
+    rawBrightness = analogRead(A0);
+    newBrightness = rawBrightness>>6; //change range
+    if (newBrightness < 1){
+        newBrightness = 1; //never be zero
+    }
+    analogWrite(pwmOut, newBrightness);
+}
+
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT); //LED, GPIO 2, D4
     LED(HIGH);
 
     Serial.begin(115200);
     Serial.println();
+
+    analogWriteRange(pwmRange); //display brightness setup
+    analogWriteFreq(pwmFreq);
+    pinMode(pwmOut, OUTPUT);
+    analogWrite(pwmOut, 1); //start at lowest brightness
+    tftBrightness.attach_ms(500, updateBrightness); //call every 500ms
+
     tft.init();
     tft.setRotation(2);
     clearScreen(2); //start at top, font size 2
@@ -247,7 +271,7 @@ void printWeatherDisplay(){
     tft.setCursor(DP_HALF_W+2, tft.getCursorY());
     tempVal = dailyWeather[0].getHumidity();
     colorPrecip(tempVal);
-    tft.print("Hum:");
+    tft.print("RH:");
     printTFTSpace(2);
     tft.print(tempVal);
     tft.println("%");
@@ -317,14 +341,14 @@ void printWeatherDisplay(){
     tft.setCursor(2,tft.getCursorY());
     tempVal = dailyWeather[1].getHumidity();
     colorPrecip(tempVal);
-    tft.print("Hum:");
+    tft.print("RH:");
     printTFTSpace(4);
     tft.print(tempVal);
     tft.print("%");
     tft.setCursor(DP_HALF_W+2,tft.getCursorY());
     tempVal = dailyWeather[2].getHumidity();
     colorPrecip(tempVal);
-    tft.print("Hum:");
+    tft.print("RH:");
     printTFTSpace(4);
     tft.print(tempVal);
     tft.println("%");
@@ -354,7 +378,7 @@ void colorPrecip(int color){
     if (color > 75){
         tft.setTextColor(TFT_RED); //is actually blue
     }
-    else if (color > 50){
+    else if (color > 50){ //is light blue
         tft.setTextColor(TFT_ORANGE);
     }
     else {
