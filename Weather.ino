@@ -10,7 +10,8 @@
 #include "src/weatherClass.h"
 #include "MiscSettings.h" //D4=BUILTIN_LED,not RST
 //display
-#include <TFT_eSPI.h> //!!D6=RST!!,D8=CS,D3=A0/DC,D7=SDA,D5=SCL
+//For TFT_eSPI, in User_Setup.h, set TFT_DC PIN_D0 and TFT_RST PIN_D6
+#include <TFT_eSPI.h> //!!D6=RST!!,!!D0=A0/DC!!,D8=CS,D7=SDA,D5=SCL
 #include <SPI.h>
 #include "src/BMP_functions.h"
 //file system

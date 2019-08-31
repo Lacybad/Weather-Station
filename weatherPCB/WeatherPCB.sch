@@ -15,7 +15,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L WeatherPCB-rescue:WeMos_mini-wemos_mini U?
+L wemos_mini:WeMos_mini U?
 U 1 1 5D654E45
 P 3200 3500
 F 0 "U?" H 3200 4000 60  0000 C CNN
@@ -26,97 +26,250 @@ F 3 "https://wiki.wemos.cc/_media/products:d1:sch_d1_mini_v3.0.0.pdf" H 3200 403
 	1    0    0    -1  
 $EndComp
 $Comp
-L WeatherPCB-rescue:TFTLCD_ST7735R-WeatherPCB_Components U?
+L WeatherPCB_Components:TFTLCD_ST7735R U?
 U 1 1 5D6562B8
-P 1550 3400
-F 0 "U?" H 1525 3965 50  0000 C CNN
-F 1 "TFTLCD_ST7735R" H 1525 3874 50  0000 C CNN
-F 2 "" H 1950 3800 50  0001 C CNN
-F 3 "" H 1950 3800 50  0001 C CNN
-F 4 "https://www.amazon.com/HiLetgo-ST7735R-128160-Display-Arduino/dp/B00LSG51MM" H 1900 4250 50  0001 C CNN "Where to Buy"
-	1    1550 3400
-	1    0    0    -1  
+P 5100 3550
+F 0 "U?" H 5075 4115 50  0000 C CNN
+F 1 "TFTLCD_ST7735R" H 5075 4024 50  0000 C CNN
+F 2 "" H 5500 3950 50  0001 C CNN
+F 3 "" H 5500 3950 50  0001 C CNN
+F 4 "https://www.amazon.com/HiLetgo-ST7735R-128160-Display-Arduino/dp/B00LSG51MM" H 5450 4400 50  0001 C CNN "Where to Buy"
+	1    5100 3550
+	-1   0    0    -1  
 $EndComp
-NoConn ~ 900  3200
-NoConn ~ 900  3300
-NoConn ~ 900  3400
-NoConn ~ 900  3500
-NoConn ~ 900  3600
-NoConn ~ 900  3700
-NoConn ~ 900  3800
-Wire Wire Line
-	3700 3150 3700 2750
-Wire Wire Line
-	3700 2750 2350 2750
-Wire Wire Line
-	2350 2750 2350 3200
-Wire Wire Line
-	2350 3200 2150 3200
-Wire Wire Line
-	2350 3200 2350 3800
-Wire Wire Line
-	2350 3800 2150 3800
-Connection ~ 2350 3200
-Wire Wire Line
-	2700 3250 2450 3250
-Wire Wire Line
-	2450 3250 2450 3100
-Wire Wire Line
-	2450 3100 2150 3100
-Wire Wire Line
-	2150 3900 2450 3900
-Wire Wire Line
-	2450 3900 2450 3250
-Connection ~ 2450 3250
-Wire Wire Line
-	2150 3700 2550 3700
-Wire Wire Line
-	2550 3700 2550 4250
-Wire Wire Line
-	2550 4250 3850 4250
-Wire Wire Line
-	3850 4250 3850 3250
-Wire Wire Line
-	3850 3250 3700 3250
-Wire Wire Line
-	2150 3500 2600 3500
-Wire Wire Line
-	2600 3500 2600 4200
-Wire Wire Line
-	2600 4200 3800 4200
-Wire Wire Line
-	3800 4200 3800 3350
-Wire Wire Line
-	3800 3350 3700 3350
-Wire Wire Line
-	3750 4150 2250 4150
-Wire Wire Line
-	2250 4150 2250 3600
-Wire Wire Line
-	2250 3600 2150 3600
-Wire Wire Line
-	2150 3300 2700 3300
-Wire Wire Line
-	2700 3300 2700 3350
-Wire Wire Line
-	2150 3400 2650 3400
-Wire Wire Line
-	2650 3400 2650 3450
-Wire Wire Line
-	2650 3450 2700 3450
-NoConn ~ 3700 3450
 NoConn ~ 3700 3750
 NoConn ~ 3700 3850
 NoConn ~ 2700 3750
 NoConn ~ 2700 3650
 NoConn ~ 2700 3550
-NoConn ~ 2700 3150
 NoConn ~ 2700 3850
 Text Notes 1300 4750 0    50   ~ 0
-PIN MAP\nLCD----ESP8266 (GPIO)\nRESET---D4 (2,LED)\nCS-----D8 (15,SS)\nA0/DC--D3 (0)\nSDA----D7 (13,MOSI)\nSCL----D5 (14,SCK)
+PIN MAP\nLCD----ESP8266 (Old)\nRESET---D6 (D4)\nCS-----D8\nA0/DC--D0 (D3)\nSDA----D7\nSCL----D5
+NoConn ~ 5750 3350
+NoConn ~ 5750 3450
+NoConn ~ 5750 3550
+NoConn ~ 5750 3650
+NoConn ~ 5750 3750
+NoConn ~ 5750 3850
+NoConn ~ 5750 3950
+$Comp
+L power:GND #PWR?
+U 1 1 5D69B9AA
+P 2300 3100
+F 0 "#PWR?" H 2300 2850 50  0001 C CNN
+F 1 "GND" H 2305 2927 50  0000 C CNN
+F 2 "" H 2300 3100 50  0001 C CNN
+F 3 "" H 2300 3100 50  0001 C CNN
+	1    2300 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR?
+U 1 1 5D69BA3D
+P 2600 3100
+F 0 "#PWR?" H 2600 2950 50  0001 C CNN
+F 1 "+5V" H 2615 3273 50  0000 C CNN
+F 2 "" H 2600 3100 50  0001 C CNN
+F 3 "" H 2600 3100 50  0001 C CNN
+	1    2600 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5D69BAB3
+P 3850 3100
+F 0 "#PWR?" H 3850 2950 50  0001 C CNN
+F 1 "+3.3V" H 3865 3273 50  0000 C CNN
+F 2 "" H 3850 3100 50  0001 C CNN
+F 3 "" H 3850 3100 50  0001 C CNN
+	1    3850 3100
+	1    0    0    -1  
+$EndComp
 Wire Wire Line
-	3750 3550 3700 3550
+	3700 3150 3850 3150
 Wire Wire Line
-	3750 3550 3750 4150
-NoConn ~ 3700 3650
+	3850 3150 3850 3100
+Wire Wire Line
+	2700 3150 2600 3150
+Wire Wire Line
+	2600 3150 2600 3100
+Wire Wire Line
+	2700 3250 2500 3250
+Wire Wire Line
+	2500 3250 2500 3050
+Wire Wire Line
+	2500 3050 2300 3050
+Wire Wire Line
+	2300 3050 2300 3100
+Wire Wire Line
+	3700 3250 3950 3250
+Wire Wire Line
+	3950 3250 3950 3850
+Wire Wire Line
+	3950 3850 4500 3850
+Wire Wire Line
+	4500 3750 3850 3750
+Wire Wire Line
+	3850 3750 3850 3550
+Wire Wire Line
+	3850 3550 3700 3550
+Wire Wire Line
+	3700 3650 4100 3650
+Wire Wire Line
+	4100 3650 4100 3550
+Wire Wire Line
+	4100 3550 4500 3550
+Wire Wire Line
+	3700 3450 4500 3450
+Wire Wire Line
+	3700 3350 4150 3350
+Wire Wire Line
+	4150 3350 4150 3650
+Wire Wire Line
+	4150 3650 4500 3650
+$Comp
+L power:GND #PWR?
+U 1 1 5D69CD81
+P 4250 3200
+F 0 "#PWR?" H 4250 2950 50  0001 C CNN
+F 1 "GND" H 4255 3027 50  0000 C CNN
+F 2 "" H 4250 3200 50  0001 C CNN
+F 3 "" H 4250 3200 50  0001 C CNN
+	1    4250 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR?
+U 1 1 5D69CD90
+P 4450 3200
+F 0 "#PWR?" H 4450 3050 50  0001 C CNN
+F 1 "+5V" H 4465 3373 50  0000 C CNN
+F 2 "" H 4450 3200 50  0001 C CNN
+F 3 "" H 4450 3200 50  0001 C CNN
+	1    4450 3200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4500 3250 4450 3250
+Wire Wire Line
+	4450 3250 4450 3200
+Wire Wire Line
+	4500 3350 4350 3350
+Wire Wire Line
+	4350 3350 4350 3150
+Wire Wire Line
+	4350 3150 4250 3150
+Wire Wire Line
+	4250 3150 4250 3200
+$Comp
+L power:GND #PWR?
+U 1 1 5D69D756
+P 4400 4150
+F 0 "#PWR?" H 4400 3900 50  0001 C CNN
+F 1 "GND" H 4405 3977 50  0000 C CNN
+F 2 "" H 4400 4150 50  0001 C CNN
+F 3 "" H 4400 4150 50  0001 C CNN
+	1    4400 4150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4400 4150 4400 4050
+Wire Wire Line
+	4400 4050 4500 4050
+$Comp
+L digikey-kicad-library:2N4401-ND Q?
+U 1 1 5D69BEDE
+P 2850 4900
+F 0 "Q?" H 3037 4953 60  0000 L CNN
+F 1 "2N4401-ND" H 3037 4847 60  0000 L CNN
+F 2 "digikey-footprints:TO-92-3" H 3116 5278 60  0001 L CNN
+F 3 "" H 3050 5200 60  0001 L CNN
+	1    2850 4900
+	1    0    0    -1  
+$EndComp
+NoConn ~ 2700 3350
+Text Notes 2200 3400 0    50   ~ 0
+BUILTIN_LED
+Connection ~ 2300 3100
+Wire Wire Line
+	2300 3100 2300 3150
+$Comp
+L digikey-kicad-library:2N4403-ND Q?
+U 1 1 5D69C8C7
+P 3800 4700
+F 0 "Q?" H 3987 4753 60  0000 L CNN
+F 1 "2N4403-ND" H 3700 4450 60  0000 L CNN
+F 2 "digikey-footprints:TO-92-3" H 4100 5000 60  0001 L CNN
+F 3 "" H 4000 5000 60  0001 L CNN
+	1    3800 4700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4300 3950 4500 3950
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5D69E044
+P 3900 4400
+F 0 "#PWR?" H 3900 4250 50  0001 C CNN
+F 1 "+3.3V" H 3915 4573 50  0000 C CNN
+F 2 "" H 3900 4400 50  0001 C CNN
+F 3 "" H 3900 4400 50  0001 C CNN
+	1    3900 4400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US 4.7l
+U 1 1 5D69E708
+P 3300 4700
+F 0 "4.7l" V 3095 4700 50  0000 C CNN
+F 1 "R_US" V 3186 4700 50  0000 C CNN
+F 2 "" V 3340 4690 50  0001 C CNN
+F 3 "~" H 3300 4700 50  0001 C CNN
+	1    3300 4700
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R_US 4.7k
+U 1 1 5D69E765
+P 2550 4550
+F 0 "4.7k" H 2482 4504 50  0000 R CNN
+F 1 "R_US" H 2482 4595 50  0000 R CNN
+F 2 "" V 2590 4540 50  0001 C CNN
+F 3 "~" H 2550 4550 50  0001 C CNN
+	1    2550 4550
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5D69E835
+P 2950 5200
+F 0 "#PWR?" H 2950 4950 50  0001 C CNN
+F 1 "GND" H 2955 5027 50  0000 C CNN
+F 2 "" H 2950 5200 50  0001 C CNN
+F 3 "" H 2950 5200 50  0001 C CNN
+	1    2950 5200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2950 5200 2950 5100
+Wire Wire Line
+	2950 4700 3150 4700
+Wire Wire Line
+	3450 4700 3600 4700
+Wire Wire Line
+	3900 4500 3900 4400
+Wire Wire Line
+	4300 4900 3900 4900
+Wire Wire Line
+	4300 3950 4300 4900
+Wire Wire Line
+	2650 4900 2550 4900
+Wire Wire Line
+	2550 4400 2550 3450
+Wire Wire Line
+	2550 3450 2700 3450
+Wire Wire Line
+	2550 4900 2550 4700
+Text Notes 3250 5200 0    50   ~ 0
+Could use only resistor, or single PNP\nFor safety, using both
 $EndSCHEMATC
