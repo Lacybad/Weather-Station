@@ -4,26 +4,41 @@
 
 #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
 #include <SPI.h>
+#include <Ticker.h>     //for interrupts
 
 #define pwmOut D3       //output pin for PWM, could be led
+#define autoBrightnessDef //uncomment to to step brightness
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
+Ticker tftBrightness;
 
 uint16_t i;
 bool ledOutput = false;
-uint16_t rawAnalog = 0;
+volatile uint16_t rawAnalog = 0;
 float voltage= 0;
 
 void printOut();
 void ledFlip();
 void setupLED();
 void setupPWM();
+void setupTimer();
+void autoBrightness();
 void stepIncreaseBrightness();
 void printADC();
+void updateBrightness();
+
+void updateBrightness(){
+    rawAnalog = analogRead(A0);
+    uint8_t newBrightness = rawAnalog>>6;
+    if (newBrightness < 1){
+        newBrightness = 1;
+    }
+    analogWrite(pwmOut, newBrightness); //1024>>6 to 16 bit
+}
 
 void setupLED(){
     pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void setupPWM(){
@@ -33,19 +48,39 @@ void setupPWM(){
     analogWrite(pwmOut, 1);
 }
 
+void setupTimer(){
+    tftBrightness.attach_ms(500, updateBrightness); //for display brightness
+}
+
 void setup(void) {
     setupLED();     //allow LED to flash
     Serial.begin(115200);
     Serial.println("\nStarting");
     setupPWM();     //allow pwm output
+
+#ifdef autoBrightnessDef
+    setupTimer();
+#endif
+
     tft.init();
     tft.setRotation(2);
     printOut();
 }
 
 void loop(){
-    stepIncreaseBrightness();
+#ifdef autoBrightnessDef
+    autoBrightness();           //for auto adjusting each brightness
+#else
+    stepIncreaseBrightness(); //for going through each brightness
+#endif
     delay(2000);
+}
+
+void autoBrightness(){
+    Serial.print("ADC: ");
+    Serial.print(rawAnalog);
+    Serial.print(" >> ");
+    Serial.println(rawAnalog>>6);
 }
 
 void stepIncreaseBrightness(){
