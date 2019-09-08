@@ -1,6 +1,6 @@
 //Uncomment in User_Setup.h
 //  #define ST7735_Driver
-//  #define ST7736_GREENTAB2
+//  #define ST7736_GREENTAB
 
 //pinout D6=RST, D0=A0/DC, D8=CS, D7=SDA, D5=SCL
 #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip

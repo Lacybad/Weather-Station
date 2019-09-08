@@ -34,7 +34,7 @@
 */
 /* Uncomment in <ArduinoLibrary>/TFT_eSPI/User_Setup.h
     #define ST7735_Driver
-    #define ST7735_GREENTAB2
+    #define ST7735_GREENTAB //if colors wrong use different option
 */
 //display constants
 #define DP_W 128        //display used, need to change if using different size
@@ -100,6 +100,7 @@ void printWeatherDisplay();
 void printTFTSpace(uint8_t i);
 void timeToLocal(time_t currentTime);
 void colorPrecip(int color);
+uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue);
 bool printWeatherSerial();
 void printIcon(const char *icon);
 int checkWeatherIcon(const char *icon);
@@ -376,14 +377,23 @@ void timeToLocal(time_t currentTime){
 
 void colorPrecip(int color){
     if (color > 75){
-        tft.setTextColor(TFT_RED); //is actually blue
+        tft.setTextColor(TFT_BLUE); //is lighter dark blue
     }
     else if (color > 50){ //is light blue
-        tft.setTextColor(TFT_ORANGE);
+        tft.setTextColor(TFT_CYAN);
     }
     else {
         tft.setTextColor(TFT_WHITE);
     }
+}
+
+//help from: http://www.barth-dev.de/online/rgb565-color-picker/
+// RGB565 format is 5 for red, 6 for green, 5 for blue, fits in 16 bits
+uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue){
+    //((red & 0b11111000) << (11-3)) + ((green & 0b11111100) << (8-3)) +
+    //    ((blue & 0b11111000) >> (3))
+    return  ((red & 0b11111000) << (8)) + ((green & 0b11111100) << (5)) +
+        ((blue & 0b11111000) >> (3));
 }
 
 bool printWeatherSerial(){
