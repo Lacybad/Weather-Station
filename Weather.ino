@@ -118,7 +118,6 @@ bool printWeatherSerial();
 void printIcon(const char *icon);
 int checkWeatherIcon(const char *icon);
 void clearScreen(int textSize);
-void setTextSize(int textSize);
 void connectToWifi();
 void disconnectWifi();
 
@@ -141,6 +140,8 @@ void setup() {
 
     Serial.begin(115200);
     Serial.println();
+
+    wifi_set_sleep_type(MODEM_SLEEP_T); //just turns off WiFi temporary
 
     analogWriteRange(pwmRange); //display brightness setup
     analogWriteFreq(pwmFreq);
@@ -165,7 +166,6 @@ void setup() {
 
     pinMode(pirPin, INPUT);
     pinMode(buttonPin, INPUT);
-    wifi_set_sleep_type(MODEM_SLEEP_T); //just turns off WiFi temporary
     LED(LOW);
 
     startWeather();
@@ -182,8 +182,8 @@ void loop() {
 void startWeather(){
     bool output = getWeather();
     if (output == true){
-        printWeatherSerial();
         printWeatherDisplay();
+        printWeatherSerial();
     }
     else {
         Serial.println("Parse FAILED");
@@ -192,7 +192,8 @@ void startWeather(){
 }
 
 bool getWeather() {
-    clearScreen(1);
+    clearScreen(2);
+    tft.println("Powered by\nDark Sky");
     // Connect to remote server
     client.setInsecure(); //no https
     Serial.print("connecting to ");
@@ -335,7 +336,7 @@ void printWeatherDisplay(){
     printTemp(dailyWeather[1].getTempHigh(), dailyWeather[1].getTempLow(), 1);
     tft.println();
 
-    tft.setCursor(2,tft.getCursorY(),1);
+    tft.setCursor(2,tft.getCursorY()-1,1);
     printWater("Rain:", dailyWeather[1].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+2,tft.getCursorY());
     printWater("Rain:", dailyWeather[2].getPrecipProb(), 4);
@@ -369,7 +370,7 @@ void timeToLocal(time_t currentTime){
 }
 
 void colorPrecip(int color){
-    if (color > 0){
+    if (color > 40){
         tft.setTextColor(rgbToHex(0, 255 - (color>>2), 255));
     }
     else {
@@ -378,8 +379,8 @@ void colorPrecip(int color){
 }
 
 void colorHumid(int color){
-    if (color > 25){
-        tft.setTextColor(rgbToHex(0, 255 - (color>>2), 255));
+    if (color > 70){
+        tft.setTextColor(rgbToHex(0, 255 - (color>>3), 255));
     }
     else {
         tft.setTextColor(TFT_WHITE);
@@ -436,7 +437,7 @@ uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue){
 }
 
 bool printWeatherSerial(){
-    char temp[40];
+    char temp[120];
     if (currentWeather.getSetup()){
         Serial.println("=================");
         snprintf(temp, sizeof(temp), "Temp: %i, Rain: %i Humidity: %i, time: %ld",
@@ -489,16 +490,6 @@ int checkWeatherIcon(const char *icon){
 void clearScreen(int textSize){
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0,0,textSize);
-}
-
-void setTextSize(int textSize){
-    cursorX = tft.getCursorX();
-    cursorY = tft.getCursorY();
-    if (cursorX != 0){
-        cursorY++;
-        cursorX = 0;
-    }
-    tft.setCursor(cursorX,cursorY,textSize);
 }
 
 void connectToWifi(){
