@@ -50,6 +50,8 @@
 #define pwmRange 16     //16 bits
 #define pwmFreq 1000      //1kHz frequency
 #define pwmOut D3       //output pin for brightness
+#define pirPin D2
+#define buttonPin D1
 
 // Constant variables
 const char *ssid = STASSID;
@@ -90,11 +92,18 @@ char displayOutput[10];
 volatile uint16_t rawBrightness;
 volatile uint8_t newBrightness;
 
+//motion vars
+bool pirLast = LOW;
+bool pirInput = LOW;
+bool buttonLast = LOW;
+bool buttonInput = LOW;
+
 //function defs
 void LED(bool led_output);
 void updateBrightness();
 void setup();
 void loop();
+void startWeather();
 bool getWeather();
 void printWeatherDisplay();
 void printTFTSpace(uint8_t i);
@@ -153,11 +162,24 @@ void setup() {
     Serial.println("SPIFFS init");
 
     connectToWifi();
+
+    pinMode(pirPin, INPUT);
+    pinMode(buttonPin, INPUT);
+    wifi_set_sleep_type(MODEM_SLEEP_T); //just turns off WiFi temporary
     LED(LOW);
 
-    //cursorY = tft.getCursorY();
-    //drawBmp("/na.bmp", 0, cursorY+1);
+    startWeather();
+}
 
+void loop() {
+    buttonInput = digitalRead(buttonPin);
+    if ((buttonInput == HIGH) && (buttonLast == LOW)){
+        startWeather();
+    }
+    delay(100);
+}
+
+void startWeather(){
     bool output = getWeather();
     if (output == true){
         printWeatherSerial();
@@ -169,11 +191,8 @@ void setup() {
     }
 }
 
-void loop() {
-    delay(100);
-}
-
 bool getWeather() {
+    clearScreen(1);
     // Connect to remote server
     client.setInsecure(); //no https
     Serial.print("connecting to ");
@@ -268,7 +287,7 @@ void printWeatherDisplay(){
     tft.setCursor(tft.getCursorX()+2, tft.getCursorY(), 2);
     printWater("Rain:", dailyWeather[0].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+2, tft.getCursorY());
-    printWater("Rain:", dailyWeather[0].getHumidity(), 4);
+    printWater("RH:", dailyWeather[0].getHumidity(), 4);
     tft.println();
     tft.setTextColor(TFT_WHITE);
 
