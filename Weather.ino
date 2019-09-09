@@ -94,11 +94,13 @@ uint16_t cursorY;
 char displayOutput[10];
 volatile uint16_t rawBrightness;
 volatile uint8_t newBrightness;
+volatile bool brightnessInterrupt = false;
+volatile bool displayOn = false;
 
 //motion vars
 unsigned long lastUpdateTime = 0;
 unsigned long currentTime = 0;
-unsigned long pirTime = 0; //last updated
+volatile unsigned long pirTime = 0; //last updated
 bool pirLast = LOW;
 bool pirInput = LOW;
 bool buttonLast = LOW;
@@ -107,6 +109,9 @@ bool buttonInput = LOW;
 //function defs
 void LED(bool led_output);
 void updateBrightness();
+void attachBrightness();
+void detachBrightness();
+void setBrightness(uint8_t newBrightness);
 void setup();
 void loop();
 void startWeather();
@@ -124,6 +129,7 @@ bool printWeatherSerial();
 void printIcon(const char *icon);
 int checkWeatherIcon(const char *icon);
 void clearScreen(int textSize);
+void flashScreen();
 void connectToWifi();
 void disconnectWifi();
 
@@ -135,8 +141,24 @@ void updateBrightness(){
     rawBrightness = analogRead(A0);
     newBrightness = rawBrightness>>6; //change range
     if (newBrightness < 1){
-        newBrightness = 1; //never be zero
+        newBrightness = 1; //never be zero or else off
     }
+    setBrightness(newBrightness);
+}
+
+void attachBrightness(){
+    if (brightnessInterrupt == false){
+        tftBrightness.attach_ms(500, updateBrightness); //call every 500ms
+        brightnessInterrupt = true; //now active
+    }
+}
+void detachBrightness(){
+    if (brightnessInterrupt == true){
+        tftBrightness.detach();
+        brightnessInterrupt = false; //now not active
+    }
+}
+void setBrightness(uint8_t newBrightness){
     analogWrite(pwmOut, newBrightness);
 }
 
@@ -153,10 +175,11 @@ void setup() {
     analogWriteFreq(pwmFreq);
     pinMode(pwmOut, OUTPUT);
     analogWrite(pwmOut, 1); //start at lowest brightness
-    tftBrightness.attach_ms(500, updateBrightness); //call every 500ms
+    attachBrightness();
 
     tft.init();
     tft.setRotation(2);
+    displayOn = true;
     clearScreen(2); //start at top, font size 2
     if ((tft.width() != DP_W) && (tft.height() != DP_H)){
         Serial.print("DISPLAY FORMATTING NOT GUARANTEED");
@@ -168,8 +191,6 @@ void setup() {
     }
     Serial.println("SPIFFS init");
 
-    connectToWifi();
-
 #ifdef PIR_TIME
     pinMode(pirPin, INPUT);
 #endif
@@ -177,6 +198,7 @@ void setup() {
     pinMode(buttonPin, INPUT);
     LED(LOW);
 
+    connectToWifi();
     startWeather();
 }
 
@@ -185,13 +207,28 @@ void loop() {
 
 #ifdef PIR_TIME
     pirInput = digitalRead(pirPin);
+
     if ((pirInput == HIGH) && (pirLast == LOW)){
        //turn on display...
         pirTime = millis();
+
+        if (displayOn == false){
+            Serial.println("Turning display on");
+            attachBrightness();
+            setBrightness(8); //default
+            startWeather();
+            displayOn = true;
+        }
     }
-    //if ((pirTime + PIR_TIME) <= currentTime()){
+
+    if (((pirTime + PIR_TIME*UNIX_MINUTE) <= currentTime) && (displayOn == true)){
         //not triggered for a while
-    //}
+        Serial.println("Turning display off");
+        flashScreen();
+        detachBrightness();
+        setBrightness(0);
+        displayOn = false;
+    }
 #endif
 
     buttonInput = digitalRead(buttonPin);
@@ -210,6 +247,7 @@ void startWeather(){
     if (output == true){
         printWeatherDisplay();
         printWeatherSerial();
+        pirTime = millis(); //update last time updated
     }
     else {
         Serial.println("Parse FAILED");
@@ -363,13 +401,13 @@ void printWeatherDisplay(){
     printTemp(dailyWeather[1].getTempHigh(), dailyWeather[1].getTempLow(), 1);
     tft.println();
 
-    tft.setCursor(2,tft.getCursorY()-1,1);
+    tft.setCursor(4,tft.getCursorY()-1,1);
     printWater("Rain:", dailyWeather[1].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+2,tft.getCursorY());
     printWater("Rain:", dailyWeather[2].getPrecipProb(), 4);
     tft.println();
 
-    tft.setCursor(2,tft.getCursorY());
+    tft.setCursor(4,tft.getCursorY());
     printWater("RH:", dailyWeather[2].getHumidity(), 4);
     tft.setCursor(DP_HALF_W+2,tft.getCursorY());
     printWater("RH:", dailyWeather[2].getHumidity(), 4);
@@ -512,6 +550,12 @@ int checkWeatherIcon(const char *icon){
     }
     //do not know icon, return default unknown
     return weatherIconSize-1;
+}
+
+void flashScreen(){
+    tft.fillScreen(TFT_DARKGREY);
+    tft.setCursor(0,0);
+    tft.fillScreen(TFT_BLACK);
 }
 
 void clearScreen(int textSize){
