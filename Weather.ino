@@ -100,6 +100,10 @@ void printWeatherDisplay();
 void printTFTSpace(uint8_t i);
 void timeToLocal(time_t currentTime);
 void colorPrecip(int color);
+void colorHumid(int color);
+void printWater(const String typeWater, int water, uint8_t space);
+void colorTemp(int color);
+void printTemp(int tempH, int tempL, uint8_t space);
 uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue);
 bool printWeatherSerial();
 void printIcon(const char *icon);
@@ -248,34 +252,24 @@ void printWeatherDisplay(){
 
     //Current Temp
     tft.setCursor(DP_HALF_W, cursorY, 4);
+    colorTemp(currentWeather.getTemp());
     tft.print(currentWeather.getTemp());
+    tft.setTextColor(TFT_WHITE);
     tft.drawCircle(tft.getCursorX()+4, tft.getCursorY()+4, 2, TFT_WHITE); //degree symbol
     tft.setCursor(tft.getCursorX()+10, tft.getCursorY(), 2);
     tft.println("F");
 
     //Temp high/low
     tft.setCursor(DP_HALF_W, tft.getCursorY()+6, 2);
-    tft.print(dailyWeather[0].getTempHigh());
-    printTFTSpace(4);
-    tft.print("/");
-    printTFTSpace(4);
-    tft.println(dailyWeather[0].getTempLow());
+    printTemp(dailyWeather[0].getTempHigh(), dailyWeather[0].getTempLow(), 4);
+    tft.println();
 
     //Rain/Humidity
     tft.setCursor(tft.getCursorX()+2, tft.getCursorY(), 2);
-    tempVal = dailyWeather[0].getPrecipProb();
-    colorPrecip(tempVal);
-    tft.print("Rain:");
-    printTFTSpace(2);
-    tft.print(tempVal);
-    tft.print("%");
+    printWater("Rain:", dailyWeather[0].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+2, tft.getCursorY());
-    tempVal = dailyWeather[0].getHumidity();
-    colorPrecip(tempVal);
-    tft.print("RH:");
-    printTFTSpace(2);
-    tft.print(tempVal);
-    tft.println("%");
+    printWater("Rain:", dailyWeather[0].getHumidity(), 4);
+    tft.println();
     tft.setTextColor(TFT_WHITE);
 
     cursorY = tft.getCursorY();
@@ -301,6 +295,7 @@ void printWeatherDisplay(){
     tft.setCursor(tft.getCursorX(), tft.getCursorY()+6);
 
     //next day forecast
+    tft.setTextColor(TFT_WHITE);
     cursorY = FS1 + FS4 + (FS2<<1) + FS1 + FS2 - (FS1>>1);
     tft.drawLine(DP_HALF_W - 1, cursorY, DP_HALF_W - 1, DP_H - FS1, TFT_DARKGREY);
 
@@ -315,44 +310,23 @@ void printWeatherDisplay(){
     tft.print(dayShortStr(weekday(dailyWeather[2].getTime())));
 
     tft.setCursor(4,cursorY + LARGE_ICON - FS1);
-    tft.print(dailyWeather[1].getTempHigh());
-    tft.print("/");
-    tft.print(dailyWeather[1].getTempLow());
+    printTemp(dailyWeather[1].getTempHigh(), dailyWeather[1].getTempLow(), 1);
 
     tft.setCursor(DP_HALF_W+4,tft.getCursorY());
-    tft.print(dailyWeather[2].getTempHigh());
-    tft.print("/");
-    tft.println(dailyWeather[2].getTempLow());
+    printTemp(dailyWeather[1].getTempHigh(), dailyWeather[1].getTempLow(), 1);
+    tft.println();
 
     tft.setCursor(2,tft.getCursorY(),1);
-    tempVal = dailyWeather[1].getPrecipProb();
-    colorPrecip(tempVal);
-    tft.print("Rain:");
-    printTFTSpace(4);
-    tft.print(tempVal);
-    tft.print("%");
+    printWater("Rain:", dailyWeather[1].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+2,tft.getCursorY());
-    tempVal = dailyWeather[2].getPrecipProb();
-    colorPrecip(tempVal);
-    tft.print("Rain:");
-    printTFTSpace(4);
-    tft.print(tempVal);
-    tft.println("%");
+    printWater("Rain:", dailyWeather[2].getPrecipProb(), 4);
+    tft.println();
 
     tft.setCursor(2,tft.getCursorY());
-    tempVal = dailyWeather[1].getHumidity();
-    colorPrecip(tempVal);
-    tft.print("RH:");
-    printTFTSpace(4);
-    tft.print(tempVal);
-    tft.print("%");
+    printWater("RH:", dailyWeather[2].getHumidity(), 4);
     tft.setCursor(DP_HALF_W+2,tft.getCursorY());
-    tempVal = dailyWeather[2].getHumidity();
-    colorPrecip(tempVal);
-    tft.print("RH:");
-    printTFTSpace(4);
-    tft.print(tempVal);
-    tft.println("%");
+    printWater("RH:", dailyWeather[2].getHumidity(), 4);
+    tft.println();
     tft.setTextColor(TFT_WHITE);
 
     haveSetup = true;
@@ -376,23 +350,69 @@ void timeToLocal(time_t currentTime){
 }
 
 void colorPrecip(int color){
-    if (color > 75){
-        tft.setTextColor(TFT_BLUE); //is lighter dark blue
-    }
-    else if (color > 50){ //is light blue
-        tft.setTextColor(TFT_CYAN);
+    if (color > 0){
+        tft.setTextColor(rgbToHex(0, 255 - (color>>2), 255));
     }
     else {
         tft.setTextColor(TFT_WHITE);
     }
 }
 
+void colorHumid(int color){
+    if (color > 25){
+        tft.setTextColor(rgbToHex(0, 255 - (color>>2), 255));
+    }
+    else {
+        tft.setTextColor(TFT_WHITE);
+    }
+}
+
+void printWater(const String typeWater, int water, uint8_t space){
+    colorPrecip(water);
+    tft.print(typeWater);
+    printTFTSpace(space);
+    tft.print(water);
+    tft.print("%");
+    tft.setTextColor(TFT_WHITE);
+}
+
+void colorTemp(int color){
+    if (color > 90){
+        tft.setTextColor(TFT_RED);
+    }
+    else if (color > 75){
+        tft.setTextColor(TFT_ORANGE);
+    }
+    else if (color > 50){
+        tft.setTextColor(TFT_CYAN);
+    }
+    else if (color > 32){
+        tft.setTextColor(TFT_LIGHTGREY);
+    }
+    else {
+        tft.setTextColor(TFT_WHITE);
+    }
+}
+
+void printTemp(int tempH, int tempL, uint8_t space){
+    colorPrecip(tempH);
+    tft.print(tempH);
+    printTFTSpace(space);
+    tft.setTextColor(TFT_WHITE);
+    tft.print("/");
+    printTFTSpace(space);
+    colorTemp(tempL);
+    tft.print(tempL);
+    tft.setTextColor(TFT_WHITE);
+}
+
 //help from: http://www.barth-dev.de/online/rgb565-color-picker/
+// and https://github.com/Bodmer/TFT_eSPI/blob/master/TFT_eSPI.h#L505
 // RGB565 format is 5 for red, 6 for green, 5 for blue, fits in 16 bits
 uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue){
-    //((red & 0b11111000) << (11-3)) + ((green & 0b11111100) << (8-3)) +
+    //((red & 0b11111000) << (11-3)) + ((green & 0b11111100) << (8-3-2)) +
     //    ((blue & 0b11111000) >> (3))
-    return  ((red & 0b11111000) << (8)) + ((green & 0b11111100) << (5)) +
+    return  ((red & 0b11111000) << (8)) + ((green & 0b11111100) << (3)) +
         ((blue & 0b11111000) >> (3));
 }
 
