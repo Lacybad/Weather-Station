@@ -27,10 +27,12 @@
     #define STASSID "WiFi"
     #define STAPSK  "Password"
     #endif
-    #define apikey "xxx"
-    #define forecastLoc "/xx.xx,xx.xx"
-    #define daylightRuleConfig {"*DT", Second, Sun, Mar, 2, -XX0}
-    #define standardRuleConfig {"*ST", First, Sun, Nov, 2, -XX0}
+    #define API_KEY "xxx"
+    #define FORECAST_LOC "/xx.xx,xx.xx"
+    #define UPDATE_INTERVAL 15UL //every 15 minutes
+    #define PIR_TIME 2UL //update interval for motion detection
+    #define DAYLIGHT_RULE_CONFIG {"*DT", Second, Sun, Mar, 2, -XX0}
+    #define STANDARD_RULE_CONFIG {"*ST", First, Sun, Nov, 2, -XX0}
 */
 /* Uncomment in <ArduinoLibrary>/TFT_eSPI/User_Setup.h
     #define ST7735_Driver
@@ -52,6 +54,7 @@
 #define pwmOut D3       //output pin for brightness
 #define pirPin D2
 #define buttonPin D1
+#define UNIX_MINUTE 60000UL //600000 = 60 Sec * 1000 uS
 
 // Constant variables
 const char *ssid = STASSID;
@@ -62,7 +65,7 @@ const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_S
     JSON_OBJECT_SIZE(19) + 4*JSON_OBJECT_SIZE(38) + 4*JSON_OBJECT_SIZE(39) + 6180;
 
 const String forecastType = "/forecast/";
-//const String forecastLoc //see define location
+//const String FORECAST_LOC //see define location
 const String forecastDetails = "?exclude=minutely,hourly,flags,alerts";
 #define SUNRISE_ICON "sunrise"
 #define SUNSET_ICON "sunset"
@@ -80,8 +83,8 @@ Ticker tftBrightness;
 Weather currentWeather;
 Weather dailyWeather[3]; //weather for today, tomorrow, and day+1
 const int dailyWeatherSize = 3;
-TimeChangeRule daylightRule = daylightRuleConfig;
-TimeChangeRule standardRule = standardRuleConfig;
+TimeChangeRule daylightRule = DAYLIGHT_RULE_CONFIG;
+TimeChangeRule standardRule = STANDARD_RULE_CONFIG;
 Timezone tz(daylightRule, standardRule);
 bool haveSetup = false;
 
@@ -93,6 +96,9 @@ volatile uint16_t rawBrightness;
 volatile uint8_t newBrightness;
 
 //motion vars
+unsigned long lastUpdateTime = 0;
+unsigned long currentTime = 0;
+unsigned long pirTime = 0; //last updated
 bool pirLast = LOW;
 bool pirInput = LOW;
 bool buttonLast = LOW;
@@ -164,7 +170,10 @@ void setup() {
 
     connectToWifi();
 
+#ifdef PIR_TIME
     pinMode(pirPin, INPUT);
+#endif
+    pirTime = millis();
     pinMode(buttonPin, INPUT);
     LED(LOW);
 
@@ -172,11 +181,28 @@ void setup() {
 }
 
 void loop() {
+    currentTime = millis();
+
+#ifdef PIR_TIME
+    pirInput = digitalRead(pirPin);
+    if ((pirInput == HIGH) && (pirLast == LOW)){
+       //turn on display...
+        pirTime = millis();
+    }
+    //if ((pirTime + PIR_TIME) <= currentTime()){
+        //not triggered for a while
+    //}
+#endif
+
     buttonInput = digitalRead(buttonPin);
     if ((buttonInput == HIGH) && (buttonLast == LOW)){
         startWeather();
     }
-    delay(100);
+
+    if ((lastUpdateTime + UPDATE_INTERVAL*UNIX_MINUTE) <= currentTime){
+        startWeather();
+    }
+    delay(50);
 }
 
 void startWeather(){
@@ -207,10 +233,10 @@ bool getWeather() {
     else {
         Serial.print("Getting forecast for: ");
         Serial.println("https://" + String(host) +
-                forecastType + apikey + forecastLoc + forecastDetails);
+                forecastType + API_KEY + FORECAST_LOC + forecastDetails);
 
-        client.print(String("GET ") + forecastType + apikey +
-                forecastLoc + forecastDetails +
+        client.print(String("GET ") + forecastType + API_KEY +
+                FORECAST_LOC + forecastDetails +
                 " HTTP/1.1\r\n" +
                 "Host: " + host + "\r\n" +
                 "User-Agent: ESP8266\r\n" +
@@ -252,6 +278,7 @@ bool getWeather() {
     }
 
     Serial.println("Done!");
+    lastUpdateTime = millis();
     return true;
 }
 
