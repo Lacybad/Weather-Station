@@ -8,7 +8,8 @@
 #include <Ticker.h>     //for interrupts
 
 #define pwmOut D3       //output pin for PWM, could be led
-#define autoBrightnessDef //uncomment to to step brightness
+#define autoBrightnessDef //uncomment to use step brightness
+//#define useLED        //uncomment to use leds
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 Ticker tftBrightness;
@@ -31,7 +32,7 @@ void updateBrightness();
 void updateBrightness(){
     rawAnalog = analogRead(A0);
     uint8_t newBrightness = rawAnalog>>6;
-    if (newBrightness < 1){
+    if (newBrightness < 1){ //else display off
         newBrightness = 1;
     }
     analogWrite(pwmOut, newBrightness); //1024>>6 to 16 bit
@@ -90,7 +91,9 @@ void stepIncreaseBrightness(){
         Serial.println(i);
         printADC();
         analogWrite(pwmOut, i);
+#ifdef useLED
         ledFlip();
+#endif
         delay(2000);
     }
 }

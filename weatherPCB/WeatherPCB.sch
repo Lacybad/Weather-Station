@@ -187,41 +187,38 @@ $EndComp
 NoConn ~ 5000 3000
 Text Notes 4500 3050 0    50   ~ 0
 BUILTIN_LED
-Connection ~ 4600 2750
-Wire Wire Line
-	4600 2750 4600 2800
 $Comp
 L digikey-kicad-library:2N4403-ND Q1
 U 1 1 5D69C8C7
-P 5450 4350
-F 0 "Q1" H 5637 4403 60  0000 L CNN
-F 1 "2N4403-ND" H 5250 4050 60  0000 L CNN
-F 2 "digikey-footprints:TO-92-3" H 5750 4650 60  0001 L CNN
-F 3 "" H 5650 4650 60  0001 L CNN
-	1    5450 4350
+P 5250 4350
+F 0 "Q1" H 5437 4403 60  0000 L CNN
+F 1 "2N4403-ND" H 5050 4050 60  0000 L CNN
+F 2 "digikey-footprints:TO-92-3" H 5550 4650 60  0001 L CNN
+F 3 "" H 5450 4650 60  0001 L CNN
+	1    5250 4350
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:+3.3V #PWR011
 U 1 1 5D69E044
-P 5550 4100
-F 0 "#PWR011" H 5550 3950 50  0001 C CNN
-F 1 "+3.3V" H 5565 4273 50  0000 C CNN
-F 2 "" H 5550 4100 50  0001 C CNN
-F 3 "" H 5550 4100 50  0001 C CNN
-	1    5550 4100
+P 5350 3950
+F 0 "#PWR011" H 5350 3800 50  0001 C CNN
+F 1 "+3.3V" H 5365 4123 50  0000 C CNN
+F 2 "" H 5350 3950 50  0001 C CNN
+F 3 "" H 5350 3950 50  0001 C CNN
+	1    5350 3950
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:R_US R4
 U 1 1 5D69E708
-P 5050 4350
-F 0 "R4" V 4845 4350 50  0000 C CNN
-F 1 "4.7k" V 4936 4350 50  0000 C CNN
-F 2 "" V 5090 4340 50  0001 C CNN
-F 3 "~" H 5050 4350 50  0001 C CNN
-	1    5050 4350
-	0    1    1    0   
+P 4800 4150
+F 0 "R4" V 4595 4150 50  0000 C CNN
+F 1 "4.7k" V 4686 4150 50  0000 C CNN
+F 2 "" V 4840 4140 50  0001 C CNN
+F 3 "~" H 4800 4150 50  0001 C CNN
+	1    4800 4150
+	-1   0    0    1   
 $EndComp
 $Comp
 L Device:R_US R1
@@ -248,10 +245,6 @@ $EndComp
 Wire Wire Line
 	4800 4800 4800 4750
 Wire Wire Line
-	5200 4350 5250 4350
-Wire Wire Line
-	5550 4150 5550 4100
-Wire Wire Line
 	4450 3750 4450 3100
 Wire Wire Line
 	4450 4550 4450 4050
@@ -259,8 +252,6 @@ Text Notes 4350 5150 0    50   ~ 0
 Could use only resistor, or single PNP\nFor safety, using both
 Wire Wire Line
 	4450 3100 5000 3100
-Wire Wire Line
-	4800 4350 4900 4350
 Wire Wire Line
 	5900 3600 6800 3600
 $Comp
@@ -371,11 +362,7 @@ Wire Wire Line
 Wire Wire Line
 	5900 3800 5800 3800
 Wire Wire Line
-	5800 3800 5800 4600
-Wire Wire Line
-	5800 4600 5550 4600
-Wire Wire Line
-	5550 4600 5550 4550
+	5350 4600 5350 4550
 $Comp
 L power:+3.3V #PWR08
 U 1 1 5D76A74F
@@ -425,9 +412,7 @@ Wire Wire Line
 Wire Wire Line
 	3000 4500 3000 4400
 Wire Wire Line
-	3000 4000 3000 4100
-Wire Wire Line
-	3050 4050 4050 4050
+	3000 4000 3000 4050
 Wire Wire Line
 	4050 4050 4050 3300
 Wire Wire Line
@@ -479,4 +464,25 @@ Wire Wire Line
 	3050 2950 3050 2800
 Text Notes 3600 2800 0    30   ~ 0
 Smaller model - volt reg side up
+Wire Wire Line
+	4800 4300 4800 4350
+Wire Wire Line
+	5050 4350 4800 4350
+Connection ~ 4800 4350
+Wire Wire Line
+	5800 3800 5800 4600
+Wire Wire Line
+	5350 4600 5800 4600
+Wire Wire Line
+	5350 4000 5350 4150
+Wire Wire Line
+	4800 4000 5350 4000
+Wire Wire Line
+	5350 3950 5350 4000
+Connection ~ 5350 4000
+Wire Wire Line
+	3000 4050 4050 4050
+Connection ~ 3000 4050
+Wire Wire Line
+	3000 4050 3000 4100
 $EndSCHEMATC
