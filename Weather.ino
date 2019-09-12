@@ -38,6 +38,16 @@
     #define ST7735_Driver
     #define ST7735_GREENTAB //if colors wrong use different option
 */
+//uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
+#define DEBUG true
+#ifdef DEBUG
+    #define DEBUG_PRINT(str)    Serial.print(str)
+    #define DEBUG_PRINTLN(str)  Serial.println(str)
+#else
+    #define DEBUG_PRINT(str)
+    #define DEBUG_PRINTLN(str)
+#endif
+
 //display constants
 #define DP_W 128        //display used, need to change if using different size
 #define DP_HALF_W (DP_W >> 1)
@@ -166,8 +176,10 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT); //LED, GPIO 2, D4
     LED(HIGH);
 
+#ifdef DEBUG
     Serial.begin(115200);
-    Serial.println();
+#endif
+    DEBUG_PRINTLN();
 
     wifi_set_sleep_type(MODEM_SLEEP_T); //just turns off WiFi temporary
 
@@ -182,14 +194,14 @@ void setup() {
     displayOn = true;
     clearScreen(2); //start at top, font size 2
     if ((tft.width() != DP_W) && (tft.height() != DP_H)){
-        Serial.print("DISPLAY FORMATTING NOT GUARANTEED");
+        DEBUG_PRINT("DISPLAY FORMATTING NOT GUARANTEED");
     }
 
     if (!SPIFFS.begin()){
-        Serial.println("SPIFFS init failed...");
+        DEBUG_PRINTLN("SPIFFS init failed...");
         while (1) { delay(1); } //stop program
     }
-    Serial.println("SPIFFS init");
+    DEBUG_PRINTLN("SPIFFS init");
 
 #ifdef PIR_TIME
     pinMode(pirPin, INPUT);
@@ -200,6 +212,10 @@ void setup() {
 
     connectToWifi();
     startWeather();
+#ifdef DEBUG
+    tft.setCursor(DP_W-8,0,1);
+    tft.print("s");
+#endif
 }
 
 void loop() {
@@ -213,17 +229,20 @@ void loop() {
         pirTime = millis();
 
         if (displayOn == false){
-            Serial.println("Turning display on");
+            DEBUG_PRINTLN("Turning display on");
             attachBrightness();
             setBrightness(8); //default
             startWeather();
             displayOn = true;
+#ifdef DEBUG
+            tft.setCursor(DP_W-8,0,1);
+            tft.print("m");
+#endif
         }
     }
-
     if (((pirTime + PIR_TIME*UNIX_MINUTE) <= currentTime) && (displayOn == true)){
         //not triggered for a while
-        Serial.println("Turning display off");
+        DEBUG_PRINTLN("Turning display off");
         flashScreen();
         detachBrightness();
         setBrightness(0);
@@ -234,10 +253,18 @@ void loop() {
     buttonInput = digitalRead(buttonPin);
     if ((buttonInput == HIGH) && (buttonLast == LOW)){
         startWeather();
+#ifdef DEBUG
+        tft.setCursor(DP_W-8,0,1);
+        tft.print("b");
+#endif
     }
 
     if ((lastUpdateTime + UPDATE_INTERVAL*UNIX_MINUTE) <= currentTime){
         startWeather();
+#ifdef DEBUG
+        tft.setCursor(DP_W-8,0,1);
+        tft.print("a");
+#endif
     }
     delay(50);
 }
@@ -248,9 +275,10 @@ void startWeather(){
         printWeatherDisplay();
         printWeatherSerial();
         pirTime = millis(); //update last time updated
+        lastUpdateTime = millis();
     }
     else {
-        Serial.println("Parse FAILED");
+        DEBUG_PRINTLN("Parse FAILED");
         tft.println("Parse FAILED");
     }
 }
@@ -260,17 +288,17 @@ bool getWeather() {
     tft.println("Powered by\nDark Sky");
     // Connect to remote server
     client.setInsecure(); //no https
-    Serial.print("connecting to ");
-    Serial.println(host);
+    DEBUG_PRINT("connecting to ");
+    DEBUG_PRINTLN(host);
     if (!client.connect(host, httpsPort)) {
-        Serial.println("connection failed");
+        DEBUG_PRINTLN("connection failed");
         tft.println("connection fail");
         client.stop();
         return false;
     }
     else {
-        Serial.print("Getting forecast for: ");
-        Serial.println("https://" + String(host) +
+        DEBUG_PRINT("Getting forecast for: ");
+        DEBUG_PRINTLN("https://" + String(host) +
                 forecastType + API_KEY + FORECAST_LOC + forecastDetails);
 
         client.print(String("GET ") + forecastType + API_KEY +
@@ -280,11 +308,11 @@ bool getWeather() {
                 "User-Agent: ESP8266\r\n" +
                 "Connection: close\r\n\r\n");
 
-        Serial.println("request sent");
+        DEBUG_PRINTLN("request sent");
         while (client.connected()) {
             String line = client.readStringUntil('\n');
             if (line == "\r") {
-                Serial.println("headers received");
+                DEBUG_PRINTLN("headers received");
                 tft.println("Got forecast");
                 break;
             }
@@ -292,30 +320,30 @@ bool getWeather() {
     }
 
     //help from https://arduinojson.org/v6/assistant/
-    Serial.print("Created doc with size:"); Serial.println(capacity);
+    DEBUG_PRINT("Created doc with size:"); DEBUG_PRINTLN(capacity);
     DynamicJsonDocument doc(capacity);
     DeserializationError error = deserializeJson(doc, client);
 
     if (error){
-        Serial.print("Parse failed - ");
-        Serial.println(error.c_str());
+        DEBUG_PRINT("Parse failed - ");
+        DEBUG_PRINTLN(error.c_str());
         tft.println("JSON parse failed");
         return false;
     }
     bool output = currentWeather.setupWeather(doc["currently"]);
     if (output == false){
-        Serial.println("Setup failed for current");
+        DEBUG_PRINTLN("Setup failed for current");
         return false;
     }
     for (int i=0; i<dailyWeatherSize; i++){
         output = dailyWeather[i].setupWeather(doc["daily"]["data"][i]);
         if (output == false){
-            Serial.println("Setup failed for daily");
+            DEBUG_PRINTLN("Setup failed for daily");
             return false;
         }
     }
 
-    Serial.println("Done!");
+    DEBUG_PRINTLN("Done!");
     lastUpdateTime = millis();
     return true;
 }
@@ -504,11 +532,11 @@ uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue){
 bool printWeatherSerial(){
     char temp[120];
     if (currentWeather.getSetup()){
-        Serial.println("=================");
+        DEBUG_PRINTLN("=================");
         snprintf(temp, sizeof(temp), "Temp: %i, Rain: %i Humidity: %i, time: %ld",
                 currentWeather.getTemp(), currentWeather.getPrecipProb(),
                 currentWeather.getHumidity(), currentWeather.getTime());
-        Serial.println(temp);
+        DEBUG_PRINTLN(temp);
     }
     else {
         return false;
@@ -520,13 +548,13 @@ bool printWeatherSerial(){
                 dailyWeather[i].getPrecipProb(), dailyWeather[i].getHumidity(),
                 dailyWeather[i].getTime(), dailyWeather[i].getSunriseTime(),
                 dailyWeather[i].getSunsetTime());
-            Serial.println(temp);
+            DEBUG_PRINTLN(temp);
         }
         else {
             return false;
         }
     }
-    Serial.println("=================");
+    DEBUG_PRINTLN("=================");
 }
 
 void printIcon(const char *icon){
@@ -536,7 +564,7 @@ void printIcon(const char *icon){
     strcat(temp, weatherIcon[iconNum]);
     strcat(temp, ".bmp");
 
-    Serial.println(temp);
+    DEBUG_PRINTLN(temp);
     drawBmp(temp, tft.getCursorX(), tft.getCursorY());
 }
 
@@ -567,8 +595,8 @@ void connectToWifi(){
     if (!haveSetup){
         tft.println("Powered by\nDark Sky");
         WiFi.forceSleepWake(); delay(1);
-        Serial.print("Connecting to ");
-        Serial.println(ssid);
+        DEBUG_PRINT("Connecting to ");
+        DEBUG_PRINTLN(ssid);
         tft.println("Connecting to:");
         tft.println(ssid);
     }
@@ -591,25 +619,25 @@ void connectToWifi(){
             tft.setCursor(0,152,1);
         }
         else if (i == 50){
-            Serial.println("Restarting");
+            DEBUG_PRINTLN("Restarting");
             WiFi.disconnect(); delay(200);
             ESP.restart();
         }
         i++;
         if ( (i%5) == 0){
-            Serial.print("|");
+            DEBUG_PRINT("|");
             tft.print("|");
         }
         else {
-            Serial.print(".");
+            DEBUG_PRINT(".");
             tft.print(".");
         }
     }
 
     if (!haveSetup){
         tft.setCursor(0,cursorY,2);
-        Serial.print("\nConnected, IP address: ");
-        Serial.println(WiFi.localIP());
+        DEBUG_PRINT("\nConnected, IP address: ");
+        DEBUG_PRINTLN(WiFi.localIP());
         tft.print("\nIP: ");
         tft.println(WiFi.localIP());
     }
