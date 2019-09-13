@@ -1,8 +1,11 @@
-*.swp
 MiscSettings.h
-*.der
 data/
 weather-icons/
+weatherPCB/OldSchematics
+weatherPCB/Schematics
+weatherPCB/Libraries/Modules2.pretty
+*.der
+*.swp
 tags
 *.bak
 *.bck
@@ -13,5 +16,7 @@ tags
 *.raw
 *.net
 *.log
-sym-lib-table
 *-cache.lib
+sym-lib-table
+fp-lib-table
+*.kicad_pcb-bak
