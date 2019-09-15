@@ -1,0 +1,10 @@
+The digikey cart can be uploaded to digikey to buy the parts
+Extra parts are included as buying single parts is much more expensive and it is better to
+have extra
+Also, it is possible to use a check to save on shipping (could take an extra few days)
+
+Other parts (from Amazon):
+Wemos d1 mini - https://www.amazon.com/gp/product/B076F53B6S/
+Photoresistors (choose another for cheaper) - https://www.amazon.com/gp/product/B01N0GJ6QP/
+IR PIR Motion Sensor - https://www.amazon.com/gp/product/B07LF47TRC/
+LCD Display - https://www.amazon.com/gp/product/B00LSG51MM/

@@ -22,6 +22,7 @@ F 0 "U2" H 5500 3800 60  0000 C CNN
 F 1 "WeMos_mini" H 5500 2650 60  0000 C CNN
 F 2 "Modules2:WEMOS_D1_mini_light" H 6050 2600 60  0001 C CNN
 F 3 "https://wiki.wemos.cc/_media/products:d1:sch_d1_mini_v3.0.0.pdf" H 5500 3831 60  0001 C CNN
+F 4 "https://www.amazon.com/gp/product/B076F53B6S/" H 0   0   50  0001 C CNN "Where to Buy"
 	1    5500 3300
 	-1   0    0    1   
 $EndComp
@@ -181,6 +182,7 @@ F 0 "Q2" H 4737 4653 60  0000 L CNN
 F 1 "2N4401-ND" H 4000 4400 60  0000 L CNN
 F 2 "TO_SOT_Packages_THT:TO-92_Inline_Narrow_Oval" H 4816 4978 60  0001 L CNN
 F 3 "" H 4750 4900 60  0001 L CNN
+F 4 "https://www.digikey.com/product-detail/en/micro-commercial-co/2N4401-AP/2N4401-APCT-ND/950593" H 0   0   50  0001 C CNN "Where to Buy"
 	1    4550 4600
 	1    0    0    -1  
 $EndComp
@@ -195,6 +197,7 @@ F 0 "Q1" H 5287 4453 60  0000 L CNN
 F 1 "2N4403-ND" H 4900 4100 60  0000 L CNN
 F 2 "TO_SOT_Packages_THT:TO-92_Inline_Narrow_Oval" H 5400 4700 60  0001 L CNN
 F 3 "" H 5300 4700 60  0001 L CNN
+F 4 "https://www.digikey.com/product-detail/en/micro-commercial-co/2N4403-AP/2N4403-APCT-ND/950594" H 0   0   50  0001 C CNN "Where to Buy"
 	1    5100 4400
 	1    0    0    -1  
 $EndComp
@@ -217,6 +220,7 @@ F 0 "R3" V 4445 4200 50  0000 C CNN
 F 1 "4.7k" V 4536 4200 50  0000 C CNN
 F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 4690 4190 50  0001 C CNN
 F 3 "~" H 4650 4200 50  0001 C CNN
+F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT4K70/CF14JT4K70CT-ND/1830366" H 0   0   50  0001 C CNN "Where to Buy"
 	1    4650 4200
 	-1   0    0    1   
 $EndComp
@@ -228,6 +232,7 @@ F 0 "R1" H 4232 3904 50  0000 R CNN
 F 1 "4.7k" H 4232 3995 50  0000 R CNN
 F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 4340 3940 50  0001 C CNN
 F 3 "~" H 4300 3950 50  0001 C CNN
+F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT4K70/CF14JT4K70CT-ND/1830366" H 0   0   50  0001 C CNN "Where to Buy"
 	1    4300 3950
 	-1   0    0    1   
 $EndComp
@@ -260,6 +265,7 @@ F 0 "R2" H 6168 4196 50  0000 L CNN
 F 1 "220" H 6168 4105 50  0000 L CNN
 F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 6140 4140 50  0001 C CNN
 F 3 "~" H 6100 4150 50  0001 C CNN
+F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT220R/CF14JT220RCT-ND/1830334" H 0   0   50  0001 C CNN "Where to Buy"
 	1    6100 4150
 	1    0    0    -1  
 $EndComp
@@ -271,6 +277,7 @@ F 0 "R6" H 6168 4946 50  0000 L CNN
 F 1 "10k" H 6168 4855 50  0000 L CNN
 F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 6140 4890 50  0001 C CNN
 F 3 "~" H 6100 4900 50  0001 C CNN
+F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT10K0/CF14JT10K0CT-ND/1830374" H 0   0   50  0001 C CNN "Where to Buy"
 	1    6100 4900
 	1    0    0    -1  
 $EndComp
@@ -282,6 +289,7 @@ F 0 "R5" H 6170 4546 50  0000 L CNN
 F 1 "70-36k" H 6170 4455 50  0000 L CNN
 F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 6150 4250 50  0001 L CNN
 F 3 "~" H 6100 4450 50  0001 C CNN
+F 4 "https://www.amazon.com/GeeBat-Photoresistor-Resistors-Light-dependen-Optoresistor/dp/B01N0GJ6QP/ref=sr_1_9?keywords=photoresistor&qid=1568421612&sr=8-9" H 0   0   50  0001 C CNN "Where to Buy"
 	1    6100 4500
 	1    0    0    -1  
 $EndComp
@@ -295,8 +303,9 @@ U 1 1 5D6B98B3
 P 6500 4900
 F 0 "C1" H 6592 4946 50  0000 L CNN
 F 1 "0.1u" H 6592 4855 50  0000 L CNN
-F 2 "Capacitors_THT:C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal" H 6500 4900 50  0001 C CNN
+F 2 "Capacitors_THT:C_Disc_D3.8mm_W2.6mm_P2.50mm" H 6500 4900 50  0001 C CNN
 F 3 "~" H 6500 4900 50  0001 C CNN
+F 4 "https://www.digikey.com/product-detail/en/avx-corporation/SR215C104KAR/478-3188-ND/936830" H 0   0   50  0001 C CNN "Where to Buy"
 	1    6500 4900
 	1    0    0    -1  
 $EndComp
@@ -387,6 +396,7 @@ F 0 "SW1" V 2954 3948 50  0000 L CNN
 F 1 "SW_Push" V 3045 3948 50  0000 L CNN
 F 2 "Buttons_Switches_THT:SW_PUSH_6mm_h5mm" H 3000 4000 50  0001 C CNN
 F 3 "" H 3000 4000 50  0001 C CNN
+F 4 "https://www.digikey.com/product-detail/en/te-connectivity-alcoswitch-switches/1825910-6/450-1650-ND/1632536" H 3000 3800 50  0001 C CNN "Where to Buy"
 	1    3000 3800
 	0    1    1    0   
 $EndComp
@@ -398,6 +408,7 @@ F 0 "R4" H 3068 4296 50  0000 L CNN
 F 1 "10k" H 3068 4205 50  0000 L CNN
 F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 3040 4240 50  0001 C CNN
 F 3 "~" H 3000 4250 50  0001 C CNN
+F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT10K0/CF14JT10K0CT-ND/1830374" H 0   0   50  0001 C CNN "Where to Buy"
 	1    3000 4250
 	1    0    0    -1  
 $EndComp
@@ -419,6 +430,7 @@ F 0 "U1" H 3600 2450 50  0000 L CNN
 F 1 "PIR_MTN_SNR" H 3600 2350 50  0000 L CNN
 F 2 "Pin_Headers:Pin_Header_Angled_1x03_Pitch2.54mm" H 3400 2500 50  0001 C CNN
 F 3 "" H 3400 2500 50  0001 C CNN
+F 4 "https://www.amazon.com/gp/product/B07LF47TRC" H 0   0   50  0001 C CNN "Where to Buy"
 	1    3400 2500
 	1    0    0    -1  
 $EndComp
@@ -483,6 +495,7 @@ F 0 "SW2" H 5650 3850 50  0000 C CNN
 F 1 "SW_SPDT" H 5700 3950 50  0000 C CNN
 F 2 "Pin_Headers:Pin_Header_Straight_1x03_Pitch2.54mm" H 5650 4150 50  0001 C CNN
 F 3 "" H 5650 4150 50  0001 C CNN
+F 4 "https://www.amazon.com/gp/product/B007QAJUUS/" H 0   0   50  0001 C CNN "Where to Buy"
 	1    5650 4150
 	-1   0    0    1   
 $EndComp
