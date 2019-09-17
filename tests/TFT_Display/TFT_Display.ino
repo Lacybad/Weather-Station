@@ -115,8 +115,10 @@ void ledFlip(){
 }
 
 void printOut() {
-    uint16_t cursor1 = 0;
-    uint16_t cursor2 = 0;
+    uint16_t cursorY1 = 0;
+    uint16_t cursorY2 = 0;
+    uint16_t cursorX1 = 0;
+    uint16_t cursorX2 = 0;
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0,0);
 
@@ -124,16 +126,29 @@ void printOut() {
 
     for (int i = 0; i < 6; i++){
         tft.setTextSize(a[i]);
-        cursor1 = tft.getCursorY();
-        Serial.print(a[i]); Serial.print("s:");
-        Serial.println(cursor1);
+        cursorY1 = tft.getCursorY();
+        cursorX1 = tft.getCursorX();
 
-        tft.println("H");
-        cursor2 = tft.getCursorY();
-        Serial.print(a[i]); Serial.print("e:");
-        Serial.print(cursor2); Serial.print(" t:");
-        Serial.println(cursor2-cursor1);
+        tft.print("H");
+        cursorX2 = tft.getCursorX();
+        tft.print("\n");
+        cursorY2 = tft.getCursorY();
+
+        Serial.print(a[i]);
+
+        Serial.print("Y: ");
+        Serial.print(cursorY2);
+        Serial.print("-");
+        Serial.print(cursorY1);
+        Serial.print("=");
+        Serial.print(cursorY2-cursorY1);
+
+        Serial.print(" X: ");
+        Serial.print(cursorX2);
+        Serial.print("-");
+        Serial.print(cursorX1);
+        Serial.print("=");
+        Serial.println(cursorX2-cursorX1);
     }
 }
-
 
