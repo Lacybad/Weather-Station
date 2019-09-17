@@ -2,7 +2,7 @@ EESchema Schematic File Version 4
 LIBS:WeatherPCB-cache
 EELAYER 26 0
 EELAYER END
-$Descr A4 11693 8268
+$Descr USLetter 11000 8500
 encoding utf-8
 Sheet 1 1
 Title "Weather Station PCB"
@@ -303,7 +303,7 @@ U 1 1 5D6B98B3
 P 6500 4900
 F 0 "C1" H 6592 4946 50  0000 L CNN
 F 1 "0.1u" H 6592 4855 50  0000 L CNN
-F 2 "Capacitors_THT:C_Disc_D3.8mm_W2.6mm_P2.50mm" H 6500 4900 50  0001 C CNN
+F 2 "Capacitors_THT:C_Disc_D3.0mm_W1.6mm_P2.50mm" H 6500 4900 50  0001 C CNN
 F 3 "~" H 6500 4900 50  0001 C CNN
 F 4 "https://www.digikey.com/product-detail/en/avx-corporation/SR215C104KAR/478-3188-ND/936830" H 0   0   50  0001 C CNN "Where to Buy"
 	1    6500 4900
@@ -600,4 +600,48 @@ Wire Wire Line
 	7750 6400 7750 6250
 Wire Wire Line
 	5900 4150 5850 4150
+$Comp
+L Mechanical:MountingHole H4
+U 1 1 5D803844
+P 7050 6550
+F 0 "H4" H 7150 6596 50  0000 L CNN
+F 1 "MountingHole" H 7150 6505 50  0000 L CNN
+F 2 "Mounting_Holes:MountingHole_2.7mm" H 7050 6550 50  0001 C CNN
+F 3 "~" H 7050 6550 50  0001 C CNN
+	1    7050 6550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H3
+U 1 1 5D805BF3
+P 7050 6400
+F 0 "H3" H 7150 6446 50  0000 L CNN
+F 1 "MountingHole" H 7150 6355 50  0000 L CNN
+F 2 "Mounting_Holes:MountingHole_2.7mm" H 7050 6400 50  0001 C CNN
+F 3 "~" H 7050 6400 50  0001 C CNN
+	1    7050 6400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H2
+U 1 1 5D805C29
+P 7050 6250
+F 0 "H2" H 7150 6296 50  0000 L CNN
+F 1 "MountingHole" H 7150 6205 50  0000 L CNN
+F 2 "Mounting_Holes:MountingHole_2.7mm" H 7050 6250 50  0001 C CNN
+F 3 "~" H 7050 6250 50  0001 C CNN
+	1    7050 6250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H1
+U 1 1 5D805C61
+P 7050 6100
+F 0 "H1" H 7150 6146 50  0000 L CNN
+F 1 "MountingHole" H 7150 6055 50  0000 L CNN
+F 2 "Mounting_Holes:MountingHole_2.7mm" H 7050 6100 50  0001 C CNN
+F 3 "~" H 7050 6100 50  0001 C CNN
+	1    7050 6100
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

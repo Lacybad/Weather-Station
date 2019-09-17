@@ -8,3 +8,4 @@ Wemos d1 mini - https://www.amazon.com/gp/product/B076F53B6S/
 Photoresistors (choose another for cheaper) - https://www.amazon.com/gp/product/B01N0GJ6QP/
 IR PIR Motion Sensor - https://www.amazon.com/gp/product/B07LF47TRC/
 LCD Display - https://www.amazon.com/gp/product/B00LSG51MM/
+Project Boxes - https://www.amazon.com/dp/B07V7X11LJ

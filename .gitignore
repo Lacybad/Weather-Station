@@ -3,9 +3,11 @@ data/
 weather-icons/
 weatherPCB/OldSchematics
 weatherPCB/Schematics
+weatherPCB/WeatherPCBGerber
 weatherPCB/Libraries/Modules2.pretty
 *.der
 *.swp
+*.zip
 tags
 *.bak
 *.bck
