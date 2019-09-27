@@ -41,7 +41,7 @@
     #define ST7735_GREENTAB //if colors wrong use different option
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
-#define DEBUG true
+#define DEBUG
 #ifdef DEBUG
     #define DEBUG_PRINT(str)    Serial.print(str)
     #define DEBUG_PRINTLN(str)  Serial.println(str)

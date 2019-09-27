@@ -7,11 +7,6 @@ ARDUINO_LIBS := $(ARDUINO_WORKSPACE)/libraries
 ARDUINO_OLDLIBS := $(ARDUINO_WORKSPACE)/OldLibraries
 ESP_LIBS := $(HOME)/.arduino15/packages/esp8266/hardware/esp8266/2.5.2/libraries
 
-ARD_TAG = tags.arduino_lib
-ESP_TAG = tags.esp8266_lib
-PRJ_TAG = tags.ino
-TAG_FLAGS = --langmap=c++:.cpp.ino.pde.h.hpp --languages=C++
-
 ifneq ($(wildcard *.ino).ino,)
 ARDUINO_INO_FILE = $(wildcard *.ino)
 else
@@ -87,10 +82,12 @@ imageConvertSmall:
 imageConvert: imageConvertLarge	imageConvertSmall
 
 #Help from: https://collectiveidea.com/blog/archives/2017/04/05/arduino-programming-in-vim
+#and https://www.avrfreaks.net/comment/2732811#comment-2732811
+ARD_TAG = tags.arduino
+FILE_TYPES = -regex ".*\.\(h\|c\|ino\|hpp\|cpp\|pde\)"
 ctags:
-	ctags -f $(ARD_TAG) --tag-relative=never --exclude=$(ARDUINO_OLDLIBS)/* $(TAG_FLAGS) -R $(ARDUINO_LIBS)
-	ctags -f $(ESP_TAG) --tag-relative=never $(TAG_FLAGS) -R $(ESP_LIBS)
-	ctags -f $(PRJ_TAG) $(TAG_FLAGS) -R .
-	cat $(ARD_TAG) $(ESP_TAG) $(PRJ_TAG) > tags
-	sort tags -o tags
+	find $(ARDUINO_LIBS) $(FILE_TYPES) -a -not -path $(ARDUINO_OLDLIBS) -print > $(ARD_TAG)
+	find $(ESP_LIBS) $(FILE_TYPES) -print >> $(ARD_TAG)
+	find $(shell pwd) $(FILE_TYPES) -print >> $(ARD_TAG)
+	ctags -L $(ARD_TAG)
 	rm -f tags.*
