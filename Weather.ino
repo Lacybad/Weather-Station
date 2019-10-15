@@ -385,7 +385,7 @@ void printWeatherDisplay(){
 
     //Current Temp
     tft.setCursor(DP_HALF_W, cursorY, 4);
-    colorTemp(currentWeather.getTemp());
+    //colorTemp(currentWeather.getTemp());
     tft.print(currentWeather.getTemp());
     tft.setTextColor(TFT_WHITE);
     tft.drawCircle(tft.getCursorX()+4, tft.getCursorY()+4, 2, TFT_WHITE); //degree symbol
@@ -553,13 +553,13 @@ void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
 }
 
 void printTemp(int tempH, int tempL, uint8_t space){
-    colorPrecip(tempH);
+    //colorPrecip(tempH);
     tft.print(tempH);
     printTFTSpace(space);
     tft.setTextColor(TFT_WHITE);
     tft.print("/");
     printTFTSpace(space);
-    colorTemp(tempL);
+    //colorTemp(tempL);
     tft.print(tempL);
     tft.setTextColor(TFT_WHITE);
 }
