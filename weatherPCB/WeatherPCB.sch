@@ -218,7 +218,7 @@ U 1 1 5D69E708
 P 4650 4200
 F 0 "R3" V 4445 4200 50  0000 C CNN
 F 1 "4.7k" V 4536 4200 50  0000 C CNN
-F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 4690 4190 50  0001 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 4690 4190 50  0001 C CNN
 F 3 "~" H 4650 4200 50  0001 C CNN
 F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT4K70/CF14JT4K70CT-ND/1830366" H 0   0   50  0001 C CNN "Where to Buy"
 	1    4650 4200
@@ -230,7 +230,7 @@ U 1 1 5D69E765
 P 4300 3950
 F 0 "R1" H 4232 3904 50  0000 R CNN
 F 1 "4.7k" H 4232 3995 50  0000 R CNN
-F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 4340 3940 50  0001 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 4340 3940 50  0001 C CNN
 F 3 "~" H 4300 3950 50  0001 C CNN
 F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT4K70/CF14JT4K70CT-ND/1830366" H 0   0   50  0001 C CNN "Where to Buy"
 	1    4300 3950
@@ -263,7 +263,7 @@ U 1 1 5D6B65AE
 P 6100 4150
 F 0 "R2" H 6168 4196 50  0000 L CNN
 F 1 "220" H 6168 4105 50  0000 L CNN
-F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 6140 4140 50  0001 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 6140 4140 50  0001 C CNN
 F 3 "~" H 6100 4150 50  0001 C CNN
 F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT220R/CF14JT220RCT-ND/1830334" H 0   0   50  0001 C CNN "Where to Buy"
 	1    6100 4150
@@ -275,7 +275,7 @@ U 1 1 5D6B6647
 P 6100 4900
 F 0 "R6" H 6168 4946 50  0000 L CNN
 F 1 "10k" H 6168 4855 50  0000 L CNN
-F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 6140 4890 50  0001 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 6140 4890 50  0001 C CNN
 F 3 "~" H 6100 4900 50  0001 C CNN
 F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT10K0/CF14JT10K0CT-ND/1830374" H 0   0   50  0001 C CNN "Where to Buy"
 	1    6100 4900
@@ -287,7 +287,7 @@ U 1 1 5D6B739F
 P 6100 4500
 F 0 "R5" H 6170 4546 50  0000 L CNN
 F 1 "70-36k" H 6170 4455 50  0000 L CNN
-F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 6150 4250 50  0001 L CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 6150 4250 50  0001 L CNN
 F 3 "~" H 6100 4450 50  0001 C CNN
 F 4 "https://www.amazon.com/GeeBat-Photoresistor-Resistors-Light-dependen-Optoresistor/dp/B01N0GJ6QP/ref=sr_1_9?keywords=photoresistor&qid=1568421612&sr=8-9" H 0   0   50  0001 C CNN "Where to Buy"
 	1    6100 4500
@@ -303,7 +303,7 @@ U 1 1 5D6B98B3
 P 6500 4900
 F 0 "C1" H 6592 4946 50  0000 L CNN
 F 1 "0.1u" H 6592 4855 50  0000 L CNN
-F 2 "Capacitors_THT:C_Disc_D3.0mm_W1.6mm_P2.50mm" H 6500 4900 50  0001 C CNN
+F 2 "Capacitors_THT:C_Disc_D7.0mm_W2.5mm_P5.00mm" H 6500 4900 50  0001 C CNN
 F 3 "~" H 6500 4900 50  0001 C CNN
 F 4 "https://www.digikey.com/product-detail/en/avx-corporation/SR215C104KAR/478-3188-ND/936830" H 0   0   50  0001 C CNN "Where to Buy"
 	1    6500 4900
@@ -406,7 +406,7 @@ U 1 1 5D76AA6E
 P 3000 4250
 F 0 "R4" H 3068 4296 50  0000 L CNN
 F 1 "10k" H 3068 4205 50  0000 L CNN
-F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 3040 4240 50  0001 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 3040 4240 50  0001 C CNN
 F 3 "~" H 3000 4250 50  0001 C CNN
 F 4 "https://www.digikey.com/product-detail/en/stackpole-electronics-inc/CF14JT10K0/CF14JT10K0CT-ND/1830374" H 0   0   50  0001 C CNN "Where to Buy"
 	1    3000 4250
