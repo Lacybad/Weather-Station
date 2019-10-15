@@ -18,7 +18,7 @@ $Comp
 L wemos_mini:WeMos_mini U2
 U 1 1 5D654E45
 P 5500 3300
-F 0 "U2" H 5500 3800 60  0000 C CNN
+F 0 "U2" H 5500 3650 60  0000 C CNN
 F 1 "WeMos_mini" H 5500 2650 60  0000 C CNN
 F 2 "Modules2:WEMOS_D1_mini_light" H 6050 2600 60  0001 C CNN
 F 3 "https://wiki.wemos.cc/_media/products:d1:sch_d1_mini_v3.0.0.pdf" H 5500 3831 60  0001 C CNN
@@ -180,14 +180,13 @@ U 1 1 5D69BEDE
 P 4550 4600
 F 0 "Q2" H 4737 4653 60  0000 L CNN
 F 1 "2N4401-ND" H 4000 4400 60  0000 L CNN
-F 2 "TO_SOT_Packages_THT:TO-92_Inline_Narrow_Oval" H 4816 4978 60  0001 L CNN
+F 2 "TO_SOT_Packages_THT:TO-92_Inline_Wide" H 4816 4978 60  0001 L CNN
 F 3 "" H 4750 4900 60  0001 L CNN
 F 4 "https://www.digikey.com/product-detail/en/micro-commercial-co/2N4401-AP/2N4401-APCT-ND/950593" H 0   0   50  0001 C CNN "Where to Buy"
 	1    4550 4600
 	1    0    0    -1  
 $EndComp
-NoConn ~ 5000 3000
-Text Notes 4500 3050 0    50   ~ 0
+Text Notes 4750 2975 0    30   ~ 0
 BUILTIN_LED
 $Comp
 L digikey-kicad-library:2N4403-ND Q1
@@ -195,7 +194,7 @@ U 1 1 5D69C8C7
 P 5100 4400
 F 0 "Q1" H 5287 4453 60  0000 L CNN
 F 1 "2N4403-ND" H 4900 4100 60  0000 L CNN
-F 2 "TO_SOT_Packages_THT:TO-92_Inline_Narrow_Oval" H 5400 4700 60  0001 L CNN
+F 2 "TO_SOT_Packages_THT:TO-92_Inline_Wide" H 5400 4700 60  0001 L CNN
 F 3 "" H 5300 4700 60  0001 L CNN
 F 4 "https://www.digikey.com/product-detail/en/micro-commercial-co/2N4403-AP/2N4403-APCT-ND/950594" H 0   0   50  0001 C CNN "Where to Buy"
 	1    5100 4400
@@ -644,4 +643,58 @@ F 3 "~" H 7050 6100 50  0001 C CNN
 	1    7050 6100
 	1    0    0    -1  
 $EndComp
+Text Notes 7525 5375 0    50   ~ 0
+Optionally, can use 4.7k resistors instead of 10k (or vice versa).
+$Comp
+L Sensor_Temperature:DS1822 U4
+U 1 1 5DA67D1B
+P 4350 2025
+F 0 "U4" H 4120 2071 50  0000 R CNN
+F 1 "DS1822" H 4120 1980 50  0000 R CNN
+F 2 "TO_SOT_Packages_THT:TO-92_Inline_Wide" H 3350 1775 50  0001 C CNN
+F 3 "http://datasheets.maximintegrated.com/en/ds/DS1822.pdf" H 4200 2275 50  0001 C CNN
+	1    4350 2025
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5025 3000 5000 3000
+Wire Wire Line
+	4475 3000 4475 2375
+Wire Wire Line
+	4475 2375 4700 2375
+Wire Wire Line
+	4700 2375 4700 2025
+Wire Wire Line
+	4700 2025 4650 2025
+Connection ~ 5000 3000
+Wire Wire Line
+	5000 3000 4475 3000
+Text Notes 3750 1900 0    50   ~ 0
+OPTIONAL
+$Comp
+L power:GND #PWR0105
+U 1 1 5DA6A555
+P 4350 2375
+F 0 "#PWR0105" H 4350 2125 50  0001 C CNN
+F 1 "GND" H 4355 2202 50  0000 C CNN
+F 2 "" H 4350 2375 50  0001 C CNN
+F 3 "" H 4350 2375 50  0001 C CNN
+	1    4350 2375
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR0106
+U 1 1 5DA6A586
+P 4350 1675
+F 0 "#PWR0106" H 4350 1525 50  0001 C CNN
+F 1 "+3.3V" H 4365 1848 50  0000 C CNN
+F 2 "" H 4350 1675 50  0001 C CNN
+F 3 "" H 4350 1675 50  0001 C CNN
+	1    4350 1675
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4350 2375 4350 2325
+Wire Wire Line
+	4350 1725 4350 1675
 $EndSCHEMATC
