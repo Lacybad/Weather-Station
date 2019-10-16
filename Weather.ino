@@ -42,7 +42,7 @@
     #define ST7735_GREENTAB //if colors wrong use different option
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     #define DEBUG_PRINT(str)    Serial.print(str)
     #define DEBUG_PRINTLN(str)  Serial.println(str)
@@ -609,6 +609,10 @@ bool printWeatherSerial(){
 
 void printIcon(const char *icon){
     int iconNum = checkWeatherIcon(icon);
+
+    if (iconNum == (weatherIconSize-1)){
+        iconNum = checkWeatherIcon(icon); //try again to get an image
+    }
 
     char temp[25] = "/";
     strcat(temp, weatherIcon[iconNum]);
