@@ -23,19 +23,9 @@
 #include <Timezone.h>
 #include <TimeLib.h>
 
-/* include a MiscSettings.h file for these defs
-    #ifndef STASSID
-    #define STASSID "WiFi"
-    #define STAPSK  "Password"
-    #endif
-    #define API_KEY "xxx"
-    #define FORECAST_LOC "/xx.xx,xx.xx"
-    #define UPDATE_INTERVAL 15UL //every 15 minutes
-    #define PIR_TIME 2UL //update interval for motion detection
-    #define PIR_ON_TIME 7 //on time
-    #define PIR_OFF_TIME 12+10 //off time starts at 22 (24 hour time)
-    #define DAYLIGHT_RULE_CONFIG {"*DT", Second, Sun, Mar, 2, -XX0}
-    #define STANDARD_RULE_CONFIG {"*ST", First, Sun, Nov, 2, -XX0}
+/* include a MiscSettings.h/Settings.h file for these defs
+STASSID, STAPSK, API_KEY, FORECAST_LOC, UPDATE_INTERVAL, PIR_TIME,
+PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 */
 /* Uncomment in <ArduinoLibrary>/TFT_eSPI/User_Setup.h
     #define ST7735_Driver
@@ -135,6 +125,7 @@ void timeToLocal(time_t currentTime);
 void colorPrecip(int color);
 void colorHumid(int color);
 void printWater(const String typeWater, int water, uint8_t space);
+void printHumid(const String typeWater, int water, uint8_t space);
 void colorTemp(int color);
 void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
         uint8_t textWidth);
@@ -404,7 +395,7 @@ void printWeatherDisplay(){
     tft.setCursor(tft.getCursorX(), tft.getCursorY()-(FS1>>2), 2);
     printWater("Rain:", dailyWeather[0].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+6, tft.getCursorY());
-    printWater("RH:", dailyWeather[0].getHumidity(), 4);
+    printHumid("RH:", dailyWeather[0].getHumidity(), 4);
     tft.println();
     tft.setTextColor(TFT_WHITE);
 
@@ -461,9 +452,9 @@ void printWeatherDisplay(){
     tft.println();
 
     tft.setCursor(4,tft.getCursorY());
-    printWater("RH:", dailyWeather[2].getHumidity(), 4);
+    printHumid("RH:", dailyWeather[2].getHumidity(), 4);
     tft.setCursor(DP_HALF_W+2,tft.getCursorY());
-    printWater("RH:", dailyWeather[2].getHumidity(), 4);
+    printHumid("RH:", dailyWeather[2].getHumidity(), 4);
     tft.println();
     tft.setTextColor(TFT_WHITE);
 
@@ -507,6 +498,15 @@ void colorHumid(int color){
 
 void printWater(const String typeWater, int water, uint8_t space){
     colorPrecip(water);
+    tft.print(typeWater);
+    printTFTSpace(space);
+    tft.print(water);
+    tft.print("%");
+    tft.setTextColor(TFT_WHITE);
+}
+
+void printHumid(const String typeWater, int water, uint8_t space){
+    tft.setTextColor(TFT_LIGHTGREY);
     tft.print(typeWater);
     printTFTSpace(space);
     tft.print(water);
@@ -608,14 +608,16 @@ bool printWeatherSerial(){
 }
 
 void printIcon(const char *icon){
-    int iconNum = checkWeatherIcon(icon);
+    int iconNum = 0;
+    int i = 0;
 
-    if (iconNum == (weatherIconSize-1)){
+    while (i < 5 && iconNum != (weatherIconSize-1)){
         iconNum = checkWeatherIcon(icon); //try again to get an image
+        i++;
     }
 
     char temp[25] = "/";
-    strcat(temp, weatherIcon[iconNum]);
+    strcat(temp, weatherIcon[iconNum]); //always has a file
     strcat(temp, ".bmp");
 
     DEBUG_PRINTLN(temp);
