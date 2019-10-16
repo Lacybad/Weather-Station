@@ -608,8 +608,11 @@ bool printWeatherSerial(){
 }
 
 void printIcon(const char *icon){
-    int iconNum = 0;
-    int i = 0;
+    uint16_t iconY = 0;
+    uint16_t iconX = 0;
+    int8_t iconNum = 0;
+    int8_t i = 0;
+    int8_t bmp_val = 0;
 
     while (i < 5 && iconNum != (weatherIconSize-1)){
         iconNum = checkWeatherIcon(icon); //try again to get an image
@@ -621,7 +624,15 @@ void printIcon(const char *icon){
     strcat(temp, ".bmp");
 
     DEBUG_PRINTLN(temp);
-    drawBmp(temp, tft.getCursorX(), tft.getCursorY());
+
+    iconY = tft.getCursorY();
+    iconX = tft.getCursorX();
+
+    i = 0;
+    while(i < 3 && bmp_val != 1){
+        drawBmp(temp, iconX, iconY);
+        i++;
+    }
 }
 
 //can not edit input
