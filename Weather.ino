@@ -32,7 +32,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
     #define ST7735_GREENTAB //if colors wrong use different option
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
     #define DEBUG_PRINT(str)    Serial.print(str)
     #define DEBUG_PRINTLN(str)  Serial.println(str)
@@ -87,7 +87,7 @@ Ticker tftBrightness;
 //weather variables
 Weather currentWeather;
 Weather dailyWeather[3]; //weather for today, tomorrow, and day+1
-const int dailyWeatherSize = 3;
+#define dailyWeatherSize 3
 TimeChangeRule daylightRule = DAYLIGHT_RULE_CONFIG;
 TimeChangeRule standardRule = STANDARD_RULE_CONFIG;
 Timezone tz(daylightRule, standardRule);
@@ -132,6 +132,8 @@ void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
 void printTemp(int tempH, int tempL, uint8_t space);
 inline uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue);
 bool printWeatherSerial();
+void printPtrIcon(Weather *ptrWeather);
+void printIconNum(uint8_t num);
 void printIcon(const char *icon);
 int checkWeatherIcon(const char *icon);
 inline void clearScreen(int textSize);
@@ -159,6 +161,9 @@ void displayOnOff(){
         flashScreen(); //clear screen
         updateBrightness();
         displayOn = true;
+#ifdef DEBUG
+        LED(false);
+#endif
     }
     else {
         DEBUG_PRINTLN("Turning display off");
@@ -166,6 +171,9 @@ void displayOnOff(){
         flashScreen(); //clear screen
         setBrightness(0);
         displayOn = false;
+#ifdef DEBUG
+        LED(true);
+#endif
     }
 }
 
@@ -345,12 +353,15 @@ bool getWeather() {
         DEBUG_PRINTLN("Setup failed for current");
         return false;
     }
+    currentWeather.setIconNum(checkWeatherIcon(currentWeather.getIcon()));
+
     for (int i=0; i<dailyWeatherSize; i++){
         output = dailyWeather[i].setupWeather(doc["daily"]["data"][i]);
         if (output == false){
             DEBUG_PRINTLN("Setup failed for daily");
             return false;
         }
+        dailyWeather[i].setIconNum(checkWeatherIcon(dailyWeather[i].getIcon()));
     }
 
     DEBUG_PRINTLN("Done!");
@@ -373,7 +384,9 @@ void printWeatherDisplay(){
     tft.println(displayOutput);
     cursorY = tft.getCursorY();
     tft.setCursor((DP_HALF_W - LARGE_ICON)>>1,cursorY);
-    printIcon(currentWeather.getIcon());
+    //printPtrIcon(&currentWeather);
+    printIconNum(currentWeather.getIconNum());
+    //printIcon(weatherIcon[weatherIconBackup[0]]);
 
     //Current Temp
     tft.setCursor(DP_HALF_W, cursorY, 4);
@@ -427,9 +440,13 @@ void printWeatherDisplay(){
     tft.drawLine(DP_HALF_W - 1, cursorY - (FS1>>2), DP_HALF_W - 1, DP_H - (FS1>>2), TFT_DARKGREY);
 
     tft.setCursor(8,cursorY - (FS1>>1)+1);
-    printIcon(dailyWeather[1].getIcon());
+    //printPtrIcon(&dailyWeather[1]);
+    //printIcon(weatherIcon[weatherIconBackup[2]]);
+    printIconNum(dailyWeather[1].getIconNum());
     tft.setCursor(DP_HALF_W+8,tft.getCursorY());
-    printIcon(dailyWeather[2].getIcon());
+    //printPtrIcon(&dailyWeather[2]);
+    //printIcon(weatherIcon[weatherIconBackup[3]]);
+    printIconNum(dailyWeather[2].getIconNum());
 
     tft.setCursor(20, cursorY - FS2, 2);
     tft.print(dayShortStr(weekday(dailyWeather[1].getTime())));
@@ -607,32 +624,44 @@ bool printWeatherSerial(){
 #endif
 }
 
-void printIcon(const char *icon){
-    uint16_t iconY = 0;
-    uint16_t iconX = 0;
-    int8_t iconNum = 0;
+void printPtrIcon(Weather *ptrWeather){
     int8_t i = 0;
-    int8_t bmp_val = 0;
+    uint8_t iconNum = 0;
 
-    while (i < 5 && iconNum != (weatherIconSize-1)){
-        iconNum = checkWeatherIcon(icon); //try again to get an image
+    do {
+        iconNum = checkWeatherIcon((*ptrWeather).getIcon()); //try again to get an image
+        if (i > 2){
+            delay(10);
+        }
         i++;
+    } while (i < 20 && iconNum == (weatherIconSize-1));
+
+    if (i > 15){
+        DEBUG_PRINT("ptr: ");
+        DEBUG_PRINT(i);
+        DEBUG_PRINT(" ");
+        DEBUG_PRINT(checkWeatherIcon((*ptrWeather).getIcon()));
+        DEBUG_PRINT(" ");
     }
 
+    printIcon(weatherIcon[iconNum]);
+}
+
+void printIconNum(uint8_t num){
+    printIcon(weatherIcon[num]);
+}
+
+void printIcon(const char *icon){
+    DEBUG_PRINT(icon);
+    DEBUG_PRINT(" ");
+
     char temp[25] = "/";
-    strcat(temp, weatherIcon[iconNum]); //always has a file
+    strcat(temp, icon); //always has a file
     strcat(temp, ".bmp");
 
     DEBUG_PRINTLN(temp);
 
-    iconY = tft.getCursorY();
-    iconX = tft.getCursorX();
-
-    i = 0;
-    while(i < 3 && bmp_val != 1){
-        drawBmp(temp, iconX, iconY);
-        i++;
-    }
+    drawBmp(temp, tft.getCursorX(), tft.getCursorY()); //just in case
 }
 
 //can not edit input

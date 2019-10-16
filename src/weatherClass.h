@@ -15,6 +15,7 @@ class Weather {
         bool daily;
         long time;
         const char *icon;
+        uint8_t iconNum;
         long sunriseTime;
         long sunsetTime;
         int precipProbability;
@@ -33,6 +34,8 @@ class Weather {
         bool isDaily();
         long getTime();
         const char* getIcon();
+        void setIconNum(uint8_t num); //for reference
+        uint8_t getIconNum();
         long getSunriseTime();
         long getSunsetTime();
         int getPrecipProb();

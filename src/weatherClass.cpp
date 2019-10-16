@@ -34,6 +34,7 @@ bool Weather::setupWeather(JsonObject weatherData) {
     time = weatherData["time"];
 
     icon = weatherData["icon"];
+    iconNum = 0; //by default
 
     //sunset/sunrise time
     if (daily){
@@ -81,6 +82,14 @@ long Weather::getTime(){
 
 const char* Weather::getIcon(){
     return icon;
+}
+
+void Weather::setIconNum(uint8_t num){
+    iconNum = num; //optional
+}
+
+uint8_t Weather::getIconNum(){
+    return iconNum;
 }
 
 long Weather::getSunriseTime(){
