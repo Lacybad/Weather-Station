@@ -32,7 +32,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
     #define ST7735_GREENTAB //if colors wrong use different option
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     #define DEBUG_PRINT(str)    Serial.print(str)
     #define DEBUG_PRINTLN(str)  Serial.println(str)
@@ -77,7 +77,7 @@ const String forecastDetails = "?exclude=minutely,hourly,flags,alerts";
 const char *weatherIcon[] = {"clear-day", "clear-night", "rain", "snow",
     "sleet", "wind", "fog", "cloudy", "partly-cloudy-day", "partly-cloudy-night",
     "hail", "thunderstorm", "tornado", SUNRISE_ICON, SUNSET_ICON, "na"};
-const int weatherIconSize = 16;
+#define weatherIconSize 16
 
 //global variables
 BearSSL::WiFiClientSecure client;
@@ -86,8 +86,8 @@ Ticker tftBrightness;
 
 //weather variables
 Weather currentWeather;
-Weather dailyWeather[3]; //weather for today, tomorrow, and day+1
 #define dailyWeatherSize 3
+Weather dailyWeather[dailyWeatherSize]; //weather for today, tomorrow, and day+1
 TimeChangeRule daylightRule = DAYLIGHT_RULE_CONFIG;
 TimeChangeRule standardRule = STANDARD_RULE_CONFIG;
 Timezone tz(daylightRule, standardRule);
@@ -132,7 +132,6 @@ void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
 void printTemp(int tempH, int tempL, uint8_t space);
 inline uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue);
 bool printWeatherSerial();
-void printPtrIcon(Weather *ptrWeather);
 void printIconNum(uint8_t num);
 void printIcon(const char *icon);
 int checkWeatherIcon(const char *icon);
@@ -353,6 +352,7 @@ bool getWeather() {
         DEBUG_PRINTLN("Setup failed for current");
         return false;
     }
+    //is a work-around - sometimes does not get the icon string correctly after wakeup
     currentWeather.setIconNum(checkWeatherIcon(currentWeather.getIcon()));
 
     for (int i=0; i<dailyWeatherSize; i++){
@@ -384,9 +384,7 @@ void printWeatherDisplay(){
     tft.println(displayOutput);
     cursorY = tft.getCursorY();
     tft.setCursor((DP_HALF_W - LARGE_ICON)>>1,cursorY);
-    //printPtrIcon(&currentWeather);
     printIconNum(currentWeather.getIconNum());
-    //printIcon(weatherIcon[weatherIconBackup[0]]);
 
     //Current Temp
     tft.setCursor(DP_HALF_W, cursorY, 4);
@@ -440,12 +438,8 @@ void printWeatherDisplay(){
     tft.drawLine(DP_HALF_W - 1, cursorY - (FS1>>2), DP_HALF_W - 1, DP_H - (FS1>>2), TFT_DARKGREY);
 
     tft.setCursor(8,cursorY - (FS1>>1)+1);
-    //printPtrIcon(&dailyWeather[1]);
-    //printIcon(weatherIcon[weatherIconBackup[2]]);
     printIconNum(dailyWeather[1].getIconNum());
     tft.setCursor(DP_HALF_W+8,tft.getCursorY());
-    //printPtrIcon(&dailyWeather[2]);
-    //printIcon(weatherIcon[weatherIconBackup[3]]);
     printIconNum(dailyWeather[2].getIconNum());
 
     tft.setCursor(20, cursorY - FS2, 2);
@@ -624,30 +618,10 @@ bool printWeatherSerial(){
 #endif
 }
 
-void printPtrIcon(Weather *ptrWeather){
-    int8_t i = 0;
-    uint8_t iconNum = 0;
-
-    do {
-        iconNum = checkWeatherIcon((*ptrWeather).getIcon()); //try again to get an image
-        if (i > 2){
-            delay(10);
-        }
-        i++;
-    } while (i < 20 && iconNum == (weatherIconSize-1));
-
-    if (i > 15){
-        DEBUG_PRINT("ptr: ");
-        DEBUG_PRINT(i);
-        DEBUG_PRINT(" ");
-        DEBUG_PRINT(checkWeatherIcon((*ptrWeather).getIcon()));
-        DEBUG_PRINT(" ");
-    }
-
-    printIcon(weatherIcon[iconNum]);
-}
-
 void printIconNum(uint8_t num){
+    if (num >= (weatherIconSize-1)){
+        num = weatherIconSize-1; //set as na
+    }
     printIcon(weatherIcon[num]);
 }
 
