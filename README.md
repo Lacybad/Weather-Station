@@ -25,4 +25,4 @@ to have at least 1 MB of storage, and the images take up 124.0 KiB of space.
 
 ## Schematic
 
-![Schematic](weatherPCB/WeatherPCB.svg)
+<img align="center" src="weatherPCB/WeatherPCB.svg" />
