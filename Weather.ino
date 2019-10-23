@@ -10,7 +10,7 @@
 #include "src/weatherClass.h"
 #include "MiscSettings.h" //D4=BUILTIN_LED,not RST
 //#include "Settings.h" //Either file
-//display
+//display //drivers - greentab, blacktab+inversion(orange)
 //For TFT_eSPI, in User_Setup.h, set TFT_DC PIN_D0 and TFT_RST PIN_D6
 #include <TFT_eSPI.h> //!!D6=RST!!,!!D0=A0/DC!!,D8=CS,D7=SDA,D5=SCL
 #include <SPI.h>
@@ -26,10 +26,6 @@
 /* include a MiscSettings.h/Settings.h file for these defs
 STASSID, STAPSK, API_KEY, FORECAST_LOC, UPDATE_INTERVAL, PIR_TIME,
 PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
-*/
-/* Uncomment in <ArduinoLibrary>/TFT_eSPI/User_Setup.h
-    #define ST7735_Driver
-    #define ST7735_GREENTAB //if colors wrong use different option
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
 //#define DEBUG
@@ -99,6 +95,7 @@ uint16_t cursorY;
 char displayOutput[10];
 volatile uint16_t rawBrightness;
 volatile uint8_t newBrightness;
+volatile uint8_t oldBrightness = 0;
 volatile bool displayOn = false;
 
 //motion vars
@@ -124,7 +121,7 @@ inline void printTFTSpace(uint8_t i);
 void timeToLocal(time_t currentTime);
 void colorPrecip(int color);
 void colorHumid(int color);
-void printWater(const String typeWater, int water, uint8_t space);
+void printPrecip(const String typeWater, int water, uint8_t space);
 void printHumid(const String typeWater, int water, uint8_t space);
 void colorTemp(int color);
 void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
@@ -140,19 +137,28 @@ void flashScreen();
 void connectToWifi();
 void disconnectWifi();
 
+//flips the LED, is a wrapper function due to ESP8266 having inverse LED
 void LED(bool led_output){
     digitalWrite(LED_BUILTIN, !led_output); //need to flip the led
 }
 
+//updates the current brightness, changes slowly
 void updateBrightness(){
     rawBrightness = analogRead(A0);
     newBrightness = rawBrightness>>6; //change range
     if (newBrightness < 1){
         newBrightness = 1; //never be zero or else off
     }
-    setBrightness(newBrightness);
+    if (newBrightness > oldBrightness){
+        oldBrightness++;
+    }
+    else if (newBrightness < oldBrightness){
+        oldBrightness--;
+    }
+    setBrightness(oldBrightness);
 }
 
+//turns the display off (along with brightness) or on
 void displayOnOff(){
     if (displayOn == false){
         DEBUG_PRINTLN("Turning display on");
@@ -176,10 +182,12 @@ void displayOnOff(){
     }
 }
 
+//force sets the brightness of the display
 void setBrightness(uint8_t newBrightness){
     analogWrite(pwmOut, newBrightness);
 }
 
+//initial setup of the program
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT); //LED, GPIO 2, D4
     LED(HIGH);
@@ -227,6 +235,7 @@ void setup() {
 #endif
 }
 
+//Checks for motion, button press, and update time
 void loop() {
     currentTime = millis();
 
@@ -280,6 +289,7 @@ void loop() {
     delay(50);
 }
 
+//checks the parsing of the weather, updates display and update time
 void startWeather(){
     bool output = getWeather();
     if (output == true){
@@ -291,10 +301,12 @@ void startWeather(){
     }
     else {
         DEBUG_PRINTLN("Parse FAILED");
+        clearScreen(2);
         tft.println("Parse FAILED");
     }
 }
 
+//gets the weather from api, formats json
 bool getWeather() {
     tft.fillRect(0,DP_H-FS1, DP_W, FS1, TFT_BLACK); //clear line
     tft.setCursor(0,DP_H-FS1,1);
@@ -369,6 +381,7 @@ bool getWeather() {
     return true;
 }
 
+//outputs weather to the display
 void printWeatherDisplay(){
     clearScreen(1);
     uint16_t iconY = 0;
@@ -376,6 +389,10 @@ void printWeatherDisplay(){
     int tempVal = 0;
     int tempHigh = 0;
     int tempLow = 0;
+    if(!currentWeather.getSetup()){
+        tft.println("Not setup");
+        return;
+    }
 
     //current weather
     tft.setCursor(tft.getCursorX()+1,tft.getCursorY());
@@ -395,7 +412,7 @@ void printWeatherDisplay(){
     tft.setCursor(tft.getCursorX()+10, tft.getCursorY(), 2);
     tft.println("F");
     tft.setCursor(DP_HALF_W, tft.getCursorY()+(FS1>>1), 1);
-    printWater("Rain:", currentWeather.getPrecipProb(), 2);
+    printPrecip("Rain:", currentWeather.getPrecipProb(), 2);
 
     //Temp high/low
     tft.setCursor(DP_HALF_W, tft.getCursorY()+FS1-1, 2);
@@ -404,7 +421,7 @@ void printWeatherDisplay(){
 
     //Rain/Humidity
     tft.setCursor(tft.getCursorX(), tft.getCursorY()-(FS1>>2), 2);
-    printWater("Rain:", dailyWeather[0].getPrecipProb(), 4);
+    printPrecip("Rain:", dailyWeather[0].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+6, tft.getCursorY());
     printHumid("RH:", dailyWeather[0].getHumidity(), 4);
     tft.println();
@@ -457,9 +474,9 @@ void printWeatherDisplay(){
     tft.println();
 
     tft.setCursor(4,tft.getCursorY()-1,1);
-    printWater("Rain:", dailyWeather[1].getPrecipProb(), 4);
+    printPrecip("Rain:", dailyWeather[1].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+2,tft.getCursorY());
-    printWater("Rain:", dailyWeather[2].getPrecipProb(), 4);
+    printPrecip("Rain:", dailyWeather[2].getPrecipProb(), 4);
     tft.println();
 
     tft.setCursor(4,tft.getCursorY());
@@ -472,10 +489,12 @@ void printWeatherDisplay(){
     haveSetup = true;
 }
 
+//prints a variable size space
 inline void printTFTSpace(uint8_t i){
     tft.setCursor(tft.getCursorX()+i,tft.getCursorY());
 }
 
+//converts UTC to timezone
 void timeToLocal(time_t currentTime){
     TimeChangeRule *tcr;
     currentTime = tz.toLocal(currentTime, &tcr);
@@ -489,6 +508,7 @@ void timeToLocal(time_t currentTime){
     }
 }
 
+//changes the color of rain to stand out more
 void colorPrecip(int color){
     if (color > 40){
         tft.setTextColor(rgbToHex(0, 255 - (color>>2), 255));
@@ -498,6 +518,7 @@ void colorPrecip(int color){
     }
 }
 
+//changes humidity to stand out more
 void colorHumid(int color){
     if (color > 70){
         tft.setTextColor(rgbToHex(0, 255 - (color>>3), 255));
@@ -507,7 +528,8 @@ void colorHumid(int color){
     }
 }
 
-void printWater(const String typeWater, int water, uint8_t space){
+//prints rain format (rain: xx%)
+void printPrecip(const String typeWater, int water, uint8_t space){
     colorPrecip(water);
     tft.print(typeWater);
     printTFTSpace(space);
@@ -516,6 +538,7 @@ void printWater(const String typeWater, int water, uint8_t space){
     tft.setTextColor(TFT_WHITE);
 }
 
+//prints relative humidity format (RH: xx%)
 void printHumid(const String typeWater, int water, uint8_t space){
     tft.setTextColor(TFT_LIGHTGREY);
     tft.print(typeWater);
@@ -525,6 +548,7 @@ void printHumid(const String typeWater, int water, uint8_t space){
     tft.setTextColor(TFT_WHITE);
 }
 
+//changes with color of temperature
 void colorTemp(int color){
     if (color > 90){
         tft.setTextColor(TFT_RED);
@@ -543,6 +567,7 @@ void colorTemp(int color){
     }
 }
 
+//prints each temperature in middle
 void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
         uint8_t textWidth){
     cursorX = (space<<1) + fontSize; // includes slash and space
@@ -564,8 +589,9 @@ void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
     printTemp(tempH, tempL, space); //print
 }
 
+//prints temperature format ( xx / xx )
 void printTemp(int tempH, int tempL, uint8_t space){
-    //colorPrecip(tempH);
+    //colorPrecip(tempH); //hard to read, commented out
     tft.print(tempH);
     printTFTSpace(space);
     tft.setTextColor(TFT_WHITE);
@@ -586,6 +612,7 @@ inline uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue){
         ((blue & 0b11111000) >> (3));
 }
 
+//prints debug information
 bool printWeatherSerial(){
 #ifdef DEBUG
     timeToLocal(now());
@@ -618,6 +645,7 @@ bool printWeatherSerial(){
 #endif
 }
 
+//prints icon number in array, outputs string
 void printIconNum(uint8_t num){
     if (num >= (weatherIconSize-1)){
         num = weatherIconSize-1; //set as na
@@ -625,6 +653,7 @@ void printIconNum(uint8_t num){
     printIcon(weatherIcon[num]);
 }
 
+//prints icon from storage
 void printIcon(const char *icon){
     DEBUG_PRINT(icon);
     DEBUG_PRINT(" ");
@@ -638,7 +667,7 @@ void printIcon(const char *icon){
     drawBmp(temp, tft.getCursorX(), tft.getCursorY()); //just in case
 }
 
-//can not edit input
+//checks if string is valid
 int checkWeatherIcon(const char *icon){
     //loop through, string compare
     for (int i=0; i<weatherIconSize; i++){
@@ -650,20 +679,23 @@ int checkWeatherIcon(const char *icon){
     return weatherIconSize-1;
 }
 
+//flash screen to remove stuck pixels
 void flashScreen(){
     tft.fillScreen(TFT_BLACK);
-    delay(1);
+    delay(5);
     tft.fillScreen(TFT_DARKGREY);
-    delay(1);
+    delay(5);
     tft.setCursor(0,0);
     tft.fillScreen(TFT_BLACK);
 }
 
+//erase screen
 inline void clearScreen(int textSize){
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0,0,textSize);
 }
 
+//quick connection to wifi
 void connectToWifi(){
     if (!haveSetup){
         tft.println("Powered by\nDark Sky");
@@ -716,6 +748,7 @@ void connectToWifi(){
     }
 }
 
+//quick disconnect from wifi
 void disconnectWifi(){
     WiFi.disconnect();
     delay(1);

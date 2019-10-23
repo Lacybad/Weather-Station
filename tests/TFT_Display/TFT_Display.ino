@@ -18,6 +18,7 @@ uint16_t i;
 bool ledOutput = false;
 volatile uint16_t rawAnalog = 0;
 float voltage= 0;
+uint8_t oldBrightness = 0;
 
 void printOut();
 void ledFlip();
@@ -35,7 +36,13 @@ void updateBrightness(){
     if (newBrightness < 1){ //else display off
         newBrightness = 1;
     }
-    analogWrite(pwmOut, newBrightness); //1024>>6 to 16 bit
+    if (newBrightness > oldBrightness){
+        oldBrightness++;
+    }
+    if (newBrightness < oldBrightness){
+        oldBrightness--;
+    }
+    analogWrite(pwmOut, oldBrightness); //1024>>6 to 16 bit
 }
 
 void setupLED(){
