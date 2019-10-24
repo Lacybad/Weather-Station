@@ -56,6 +56,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 #define pirPin D2
 #define buttonPin D1
 #define UNIX_MINUTE 60000UL //600000 = 60 Sec * 1000 uS
+#define UNIX_SECOND 1000UL //1000 uS
 
 // Constant variables
 const char *ssid = STASSID;
@@ -263,7 +264,15 @@ void loop() {
         }
     }
 #endif
-    if (((pirTime + PIR_TIME*UNIX_MINUTE) <= currentTime) && (displayOn == true)){
+    if ((displayOn == true) &&
+#if defined PIR_TIME
+        ((pirTime + PIR_TIME*UNIX_MINUTE) <= currentTime)
+#elif defined PIR_TIME_SEC
+        ((pirTime + PIR_TIME_SEC*UNIX_SECOND) <= currentTime)
+#else
+        ((pirTime+ 10000UL) <= currentTime)
+#endif
+            ){
         displayOnOff(); //not triggered for a while
     }
 

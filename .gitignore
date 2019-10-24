@@ -22,3 +22,4 @@ tags
 sym-lib-table
 fp-lib-table
 *.kicad_pcb-bak
+User_Setup.h
