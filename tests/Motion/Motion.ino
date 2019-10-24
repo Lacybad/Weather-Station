@@ -21,6 +21,7 @@ void setup(void) {
     pinMode(pirMotion, INPUT);
     pinMode(button, INPUT);
     Serial.println();
+    Serial.println("Ready");
 }
 
 void loop(){
@@ -39,7 +40,7 @@ void loop(){
     }
     buttonLast = buttonInput;
 
-    delay(10);
+    delay(100); //ms
     if (count > 25){
         Serial.println();
     }

@@ -55,8 +55,8 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 #define pwmOut D3       //output pin for brightness
 #define pirPin D2
 #define buttonPin D1
-#define UNIX_MINUTE 60000UL //600000 = 60 Sec * 1000 uS
 #define UNIX_SECOND 1000UL //1000 uS
+#define UNIX_MINUTE UNIX_SECOND*60UL
 
 // Constant variables
 const char *ssid = STASSID;
@@ -206,7 +206,6 @@ void setup() {
     analogWrite(pwmOut, 1); //start at lowest brightness
     displayOn = false;
     displayOnOff();
-
     tft.init();
     tft.setRotation(2);
 
@@ -261,24 +260,21 @@ void loop() {
                 tft.print("m");
 #endif
             }
+            DEBUG_PRINT("M ");
         }
     }
 #endif
-    if ((displayOn == true) &&
-#if defined PIR_TIME
-        ((pirTime + PIR_TIME*UNIX_MINUTE) <= currentTime)
-#elif defined PIR_TIME_SEC
-        ((pirTime + PIR_TIME_SEC*UNIX_SECOND) <= currentTime)
-#else
-        ((pirTime+ 10000UL) <= currentTime)
-#endif
-            ){
+    if ((displayOn == true)
+            && ((pirTime + PIR_TIME*UNIX_SECOND) <= currentTime)){
         displayOnOff(); //not triggered for a while
     }
 
     buttonInput = digitalRead(buttonPin);
     if ((buttonInput == HIGH) && (buttonLast == LOW)){
         DEBUG_PRINTLN("Button Pressed");
+        if (displayOn == false){
+            displayOnOff();
+        }
         startWeather(); //force get new data
 #ifdef DEBUG
         tft.setCursor(DP_W-8,0,1);

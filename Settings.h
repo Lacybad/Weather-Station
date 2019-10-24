@@ -11,8 +11,8 @@
 //Other vars
 #define FORECAST_LOC "lat/long"
 #define UPDATE_INTERVAL 20UL
-//#define PIR_TIME 1UL    //time to keep display on, either or
-#define PIR_TIME_SEC 30UL    //seconds
+#define PIR_TIME 30UL    //time to keep display on, in seconds
+//#define PIR_TIME 1UL * 60UL //for minutes
 #define PIR_ON_TIME 5
 #define PIR_OFF_TIME 12+11
 
