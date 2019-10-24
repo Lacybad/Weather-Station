@@ -326,7 +326,9 @@ bool getWeather() {
         tft.setCursor(0,DP_H-FS1,1);
         tft.println("connection fail");
         client.stop();
-        return false;
+        delay(5000);
+        ESP.restart(); //restart to avoid loop
+        return false; //should never get here
     }
     else {
         DEBUG_PRINT("Getting forecast for: ");
@@ -728,7 +730,7 @@ void connectToWifi(){
             tft.fillRect(0,cursorY, DP_W, FS1, TFT_BLACK); //clear line
             tft.setCursor(0,DP_H-FS1,1);
         }
-        else if (i == 75){
+        else if (i == 100){
             DEBUG_PRINTLN("Restarting");
             WiFi.disconnect(); delay(200);
             ESP.restart();
