@@ -30,6 +30,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
 //#define DEBUG
 #ifdef DEBUG
+    //#define SHOW_MOTION
     #define DEBUG_PRINT(str)    Serial.print(str)
     #define DEBUG_PRINTLN(str)  Serial.println(str)
 #else
@@ -260,7 +261,9 @@ void loop() {
                 tft.print("m");
 #endif
             }
+#ifdef SHOW_MOTION
             DEBUG_PRINT("M ");
+#endif
         }
     }
 #endif
@@ -284,7 +287,7 @@ void loop() {
 
     if ((lastUpdateTime + UPDATE_INTERVAL*UNIX_MINUTE) <= currentTime){
         DEBUG_PRINTLN("Auto updated");
-        flashScreen();
+        //flashScreen(); //don't clear screen yet
         startWeather();
 #ifdef DEBUG
         tft.setCursor(DP_W-8,0,1);
@@ -299,6 +302,10 @@ void startWeather(){
     bool output = getWeather();
     if (output == true){
         setTime(currentWeather.getTime()); //set current time for system
+        if(haveSetup){
+            flashScreen(); //flash screen to refresh colors, not on boot
+        }
+
         printWeatherDisplay();
         printWeatherSerial();
         pirTime = millis(); //update last time updated
@@ -730,7 +737,7 @@ void connectToWifi(){
             tft.fillRect(0,cursorY, DP_W, FS1, TFT_BLACK); //clear line
             tft.setCursor(0,DP_H-FS1,1);
         }
-        else if (i == 100){
+        else if (i == 20*3){ //go by 20 for display, if > 75 + slow wifi = never connect
             DEBUG_PRINTLN("Restarting");
             WiFi.disconnect(); delay(200);
             ESP.restart();
