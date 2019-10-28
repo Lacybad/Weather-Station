@@ -28,6 +28,7 @@ STASSID, STAPSK, API_KEY, FORECAST_LOC, UPDATE_INTERVAL, PIR_TIME,
 PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
+//hint - when debugging, change the times to trigger things faster...
 //#define DEBUG
 #ifdef DEBUG
     //#define SHOW_MOTION
@@ -101,8 +102,9 @@ volatile uint8_t oldBrightness = 0;
 volatile bool displayOn = false;
 
 //motion vars
-unsigned long lastUpdateTime = 0;
-unsigned long currentTime = 0;
+volatile unsigned long lastUpdateTime = 0;
+volatile unsigned long currentTime = 0;
+volatile unsigned long currentLocalTime = 0;
 volatile unsigned long pirTime = 0; //last updated
 bool pirLast = LOW;
 bool pirInput = LOW;
@@ -121,7 +123,7 @@ bool getWeather();
 void printWeatherDisplay();
 inline void printTFTSpace(uint8_t i);
 void timeToLocal(time_t getLocalTime);
-void setLocalTime(time_t time);
+void setLocalTime(time_t getLocalTime);
 void colorPrecip(int color);
 void colorHumid(int color);
 void printPrecip(const String typeWater, int water, uint8_t space);
@@ -225,7 +227,7 @@ void setup() {
 #ifdef PIR_TIME
     pinMode(pirPin, INPUT);
 #endif
-    pirTime = millis();
+    pirTime = millis(); //for right now, blank value
     pinMode(buttonPin, INPUT);
     LED(LOW);
 
@@ -239,7 +241,7 @@ void setup() {
 
 //Checks for motion, button press, and update time
 void loop() {
-    currentTime = millis();
+    currentTime = millis(); //time since started
 
 #ifdef PIR_TIME
 
@@ -253,6 +255,7 @@ void loop() {
         if ((pirInput == HIGH) && (pirLast == LOW)){
            //turn on display...
             pirTime = millis();
+            pirLast == pirInput; //move to last
 
             if (displayOn == false){
                 displayOnOff();
@@ -264,6 +267,7 @@ void loop() {
 #else
             if ((lastUpdateTime + UPDATE_INTERVAL*UNIX_MINUTE) <= currentTime){
 #endif
+                DEBUG_PRINTLN("Motion update");
                 startWeather(); //only get new data after a period
             }
 #ifdef DEBUG
@@ -276,10 +280,13 @@ void loop() {
         }
     }
 #endif
+    //turn off if no motion for a while, always (no sleep hours)
     if ((displayOn == true) && ((pirTime + PIR_TIME*UNIX_SECOND) <= currentTime)){
+        DEBUG_PRINTLN("Auto turnoff");
         displayOnOff(); //not triggered for a while
     }
 
+    //button function
     buttonInput = digitalRead(buttonPin);
     if ((buttonInput == HIGH) && (buttonLast == LOW)){
         DEBUG_PRINTLN("Button Pressed");
@@ -309,9 +316,8 @@ void loop() {
 void startWeather(){
     bool output = getWeather();
     if (output == true){
-        setLocalTime(currentWeather.getTime());
-        setTime(currentTime); //set current time for system
         if(haveSetup){
+            DEBUG_PRINTLN("----------\nFlash display");
             flashScreen(); //flash screen to refresh colors, not on boot
         }
 
@@ -387,6 +393,8 @@ bool getWeather() {
         DEBUG_PRINTLN("Setup failed for current");
         return false;
     }
+    setLocalTime(currentWeather.getTime()); //set time
+
     //is a work-around - sometimes does not get the icon string correctly after wakeup
     currentWeather.setIconNum(checkWeatherIcon(currentWeather.getIcon()));
 
@@ -518,12 +526,11 @@ inline void printTFTSpace(uint8_t i){
 }
 
 //converts UTC to timezone
-void timeToLocal(time_t getLocalTime){
-    TimeChangeRule *tcr;
-    getLocalTime = tz.toLocal(getLocalTime, &tcr);
+void timeToLocal(time_t setATime){
+    setATime = tz.toLocal(setATime);
     snprintf(displayOutput, sizeof(displayOutput), "%02d:%02d ",
-            hourFormat12(getLocalTime), minute(getLocalTime));
-    if (isAM(getLocalTime)){
+            hourFormat12(setATime), minute(setATime));
+    if (isAM(setATime)){
         strncat(displayOutput,"AM", 2);
     }
     else {
@@ -531,9 +538,11 @@ void timeToLocal(time_t getLocalTime){
     }
 }
 
-void setLocalTime(time_t time){
-    TimeChangeRule *tcr;
-    currentTime = tz.toLocal(time, &tcr);
+//sets the current local time
+void setLocalTime(time_t setATime){
+    currentLocalTime = tz.toLocal(setATime);
+    setTime(currentLocalTime);
+    DEBUG_PRINTLN("Set local time");
 }
 
 //changes the color of rain to stand out more
@@ -643,8 +652,8 @@ inline uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue){
 //prints debug information
 bool printWeatherSerial(){
 #ifdef DEBUG
-    timeToLocal(now());
-    DEBUG_PRINTLN(displayOutput);
+    timeToLocal(currentWeather.getTime());
+    DEBUG_PRINT("Updated at: "); DEBUG_PRINTLN(displayOutput);
     char temp[120];
     if (currentWeather.getSetup()){
         DEBUG_PRINTLN("=================");
