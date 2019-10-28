@@ -256,29 +256,27 @@ void loop() {
 
             if (displayOn == false){
                 displayOnOff();
-#ifdef UPDATE_INTERVAL_MOTION
-                if ((lastUpdateTime + UPDATE_INTERVAL_MOTION*UNIX_MINUTE) <= currentTime){
-#else
-                if ((lastUpdateTime + UPDATE_INTERVAL*UNIX_MINUTE) <= currentTime){
-#endif
-                    startWeather(); //only get new data after a period
-                }
-                else{
-                    printWeatherDisplay();
-                }
-#ifdef DEBUG
-                tft.setCursor(DP_W-8,0,1);
-                tft.print("m");
-#endif
+                printWeatherDisplay(); //just turned on...
+                DEBUG_PRINTLN("Display Motion Updated...");
             }
+#ifdef UPDATE_INTERVAL_MOTION
+            if ((lastUpdateTime + UPDATE_INTERVAL_MOTION*UNIX_MINUTE) <= currentTime){
+#else
+            if ((lastUpdateTime + UPDATE_INTERVAL*UNIX_MINUTE) <= currentTime){
+#endif
+                startWeather(); //only get new data after a period
+            }
+#ifdef DEBUG
+            tft.setCursor(DP_W-8,0,1);
+            tft.print("m");
 #ifdef SHOW_MOTION
             DEBUG_PRINT("M ");
+#endif
 #endif
         }
     }
 #endif
-    if ((displayOn == true)
-            && ((pirTime + PIR_TIME*UNIX_SECOND) <= currentTime)){
+    if ((displayOn == true) && ((pirTime + PIR_TIME*UNIX_SECOND) <= currentTime)){
         displayOnOff(); //not triggered for a while
     }
 
