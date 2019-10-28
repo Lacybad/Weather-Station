@@ -96,7 +96,7 @@ bool haveSetup = false;
 uint16_t cursorX;
 uint16_t cursorY;
 char displayOutput[10];
-volatile uint16_t rawBrightness;
+volatile uint16_t rawBrightness; //10 bit number
 volatile uint8_t newBrightness;
 volatile uint8_t oldBrightness = 0;
 volatile bool displayOn = false;
@@ -150,7 +150,7 @@ void LED(bool led_output){
 //updates the current brightness, changes slowly
 void updateBrightness(){
     rawBrightness = analogRead(A0);
-    newBrightness = rawBrightness>>6; //change range
+    newBrightness = rawBrightness>>4; //change range: 0-2^(10-x) range
     if (newBrightness < 1){
         newBrightness = 1; //never be zero or else off
     }
@@ -752,7 +752,7 @@ void connectToWifi(){
     WiFi.begin(ssid, password);
 
     uint8_t i = 0;
-    tft.setCursor(0,152,1);
+    tft.setCursor(0,DP_H-FS1,1);
     cursorY = tft.getCursorY();
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
@@ -761,7 +761,7 @@ void connectToWifi(){
             tft.setCursor(0,DP_H-FS1,1);
         }
         if (i == 20*3){ //go by 20 for display, if > 75 + slow wifi = never connect
-            tft.setCursor(0,140,1);
+            tft.setCursor(0,DP_H-FS1,1); //make sure in same position
             tft.print("Restart");
             DEBUG_PRINTLN("Restarting");
             WiFi.disconnect(); delay(500);
