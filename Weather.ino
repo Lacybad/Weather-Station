@@ -23,7 +23,7 @@
 #include <Timezone.h>
 #include <TimeLib.h>
 
-/* include a MiscSettings.h/Settings.h file for these defs
+/* include a MiscSettings.h or Settings.h file for these defs
 STASSID, STAPSK, API_KEY, FORECAST_LOC, UPDATE_INTERVAL, PIR_TIME,
 PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 */
@@ -120,7 +120,8 @@ void startWeather();
 bool getWeather();
 void printWeatherDisplay();
 inline void printTFTSpace(uint8_t i);
-void timeToLocal(time_t currentTime);
+void timeToLocal(time_t getLocalTime);
+void setLocalTime(time_t time);
 void colorPrecip(int color);
 void colorHumid(int color);
 void printPrecip(const String typeWater, int water, uint8_t space);
@@ -241,7 +242,12 @@ void loop() {
     currentTime = millis();
 
 #ifdef PIR_TIME
-    if (hour() >= PIR_ON_TIME || hour() <= PIR_OFF_TIME){ //turn off at night
+
+#ifdef PIR_OFF_TIME_MORNING
+    if (hour() >= PIR_ON_TIME || hour() < PIR_OFF_TIME){ //only during day
+#else
+    if (hour() >= PIR_ON_TIME && hour() < PIR_OFF_TIME){ //only during day
+#endif
         pirInput = digitalRead(pirPin);
 
         if ((pirInput == HIGH) && (pirLast == LOW)){
@@ -250,7 +256,11 @@ void loop() {
 
             if (displayOn == false){
                 displayOnOff();
+#ifdef UPDATE_INTERVAL_MOTION
+                if ((lastUpdateTime + UPDATE_INTERVAL_MOTION*UNIX_MINUTE) <= currentTime){
+#else
                 if ((lastUpdateTime + UPDATE_INTERVAL*UNIX_MINUTE) <= currentTime){
+#endif
                     startWeather(); //only get new data after a period
                 }
                 else{
@@ -301,7 +311,8 @@ void loop() {
 void startWeather(){
     bool output = getWeather();
     if (output == true){
-        setTime(currentWeather.getTime()); //set current time for system
+        setLocalTime(currentWeather.getTime());
+        setTime(currentTime); //set current time for system
         if(haveSetup){
             flashScreen(); //flash screen to refresh colors, not on boot
         }
@@ -509,17 +520,22 @@ inline void printTFTSpace(uint8_t i){
 }
 
 //converts UTC to timezone
-void timeToLocal(time_t currentTime){
+void timeToLocal(time_t getLocalTime){
     TimeChangeRule *tcr;
-    currentTime = tz.toLocal(currentTime, &tcr);
+    getLocalTime = tz.toLocal(getLocalTime, &tcr);
     snprintf(displayOutput, sizeof(displayOutput), "%02d:%02d ",
-            hourFormat12(currentTime), minute(currentTime));
-    if (isAM(currentTime)){
+            hourFormat12(getLocalTime), minute(getLocalTime));
+    if (isAM(getLocalTime)){
         strncat(displayOutput,"AM", 2);
     }
     else {
         strncat(displayOutput, "PM", 2);
     }
+}
+
+void setLocalTime(time_t time){
+    TimeChangeRule *tcr;
+    currentTime = tz.toLocal(time, &tcr);
 }
 
 //changes the color of rain to stand out more
@@ -737,9 +753,11 @@ void connectToWifi(){
             tft.fillRect(0,cursorY, DP_W, FS1, TFT_BLACK); //clear line
             tft.setCursor(0,DP_H-FS1,1);
         }
-        else if (i == 20*3){ //go by 20 for display, if > 75 + slow wifi = never connect
+        if (i == 20*3){ //go by 20 for display, if > 75 + slow wifi = never connect
+            tft.setCursor(0,140,1);
+            tft.print("Restart");
             DEBUG_PRINTLN("Restarting");
-            WiFi.disconnect(); delay(200);
+            WiFi.disconnect(); delay(500);
             ESP.restart();
         }
         i++;
