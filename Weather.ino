@@ -150,7 +150,11 @@ void LED(bool led_output){
 //updates the current brightness, changes slowly
 void updateBrightness(){
     rawBrightness = analogRead(A0);
-    newBrightness = rawBrightness>>4; //change range: 0-2^(10-x) range
+    newBrightness = rawBrightness>>6; //change range: 0-2^(10-x) range
+    if (newBrightness > 50){
+        newBrightness = 50; //set brightness limit
+    }
+
     if (newBrightness < 1){
         newBrightness = 1; //never be zero or else off
     }
