@@ -9,7 +9,7 @@
 #define API_KEY "key"
 
 //Other vars
-#define FORECAST_LOC "lat/long"
+#define FORECAST_LOC "/42.3601,-71.0589" //example
 #define UPDATE_INTERVAL 60UL
 #define UPDATE_INTERVAL_MOTION 15UL //optional, stops rapid update with no motion
 #define PIR_TIME 30UL    //time to keep display on, in seconds
