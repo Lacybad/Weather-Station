@@ -11,6 +11,7 @@ weatherPCB/Libraries/Modules2.pretty
 tags
 *.bak
 *.bck
+*-bak
 *.000
 *.pdf
 *.png
