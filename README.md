@@ -1,7 +1,9 @@
 # Weather Station
 
+<img align="right" width="400"
+src="https://user-images.githubusercontent.com/10273995/68053467-388dcb00-fca9-11e9-84e9-5c2e924aef77.jpg">
 This weather station uses an ESP8266 (WeMos D1 Mini), a TFT KMR-1.8 LCD display, a PIR
-motion sensor, BJTs and a photoresistor for the display brightness, and an option 1-wire
+motion sensor, BJTs and a photoresistor for the display brightness, and an optional 1-wire
 temperature sensor (no code for it right now).
 
 This weather station uses darksky for the forecast with a free account. It displays the
