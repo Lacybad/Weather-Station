@@ -8,6 +8,7 @@
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include "src/weatherClass.h"
+#include "src/cert.h"       //location for cert in memory
 #include "MiscSettings.h" //D4=BUILTIN_LED,not RST
 //#include "Settings.h" //Either file
 //display //drivers - greentab, blacktab+inversion(orange)
@@ -20,6 +21,7 @@
 //use fs::File for SPIFFS, sd::File for SD if needed
 #define FS_NO_GLOBALS
 #include <FS.h>
+
 #include <Timezone.h>
 #include <TimeLib.h>
 
@@ -79,7 +81,6 @@ const char *weatherIcon[] = {"clear-day", "clear-night", "rain", "snow",
 #define weatherIconSize 16
 
 //global variables
-BearSSL::WiFiClientSecure client;
 TFT_eSPI tft = TFT_eSPI(); //start library
 Ticker tftBrightness;
 
@@ -104,7 +105,8 @@ volatile bool displayOn = false;
 //motion vars
 volatile unsigned long lastUpdateTime = 0;
 volatile unsigned long currentTime = 0;
-volatile unsigned long currentLocalTime = 0;
+volatile unsigned long currentLocalTime = 0; //if not getting ntp time
+volatile uint8_t currentHour = 0;
 volatile unsigned long pirTime = 0; //last updated
 bool pirLast = LOW;
 bool pirInput = LOW;
@@ -119,6 +121,7 @@ void setBrightness(uint8_t newBrightness);
 void setup();
 void loop();
 void startWeather();
+void setClock();
 bool getWeather();
 void printWeatherDisplay();
 inline void printTFTSpace(uint8_t i);
@@ -204,7 +207,7 @@ void setup() {
 #ifdef DEBUG
     Serial.begin(115200);
 #endif
-    DEBUG_PRINTLN();
+    DEBUG_PRINTLN("\nStartup");
 
     wifi_set_sleep_type(MODEM_SLEEP_T); //just turns off WiFi temporary
 
@@ -248,11 +251,11 @@ void loop() {
     currentTime = millis(); //time since started
 
 #ifdef PIR_TIME
-
+    currentHour = hour(tz.toLocal(now()));
 #ifdef PIR_OFF_TIME_MORNING
-    if (hour() >= PIR_ON_TIME || hour() < PIR_OFF_TIME){ //only during day
+    if (currentHour >= PIR_ON_TIME || currentHour < PIR_OFF_TIME){ //only during day
 #else
-    if (hour() >= PIR_ON_TIME && hour() < PIR_OFF_TIME){ //only during day
+    if (currentHour >= PIR_ON_TIME && currentHour < PIR_OFF_TIME){ //only during day
 #endif
         pirInput = digitalRead(pirPin);
 
@@ -283,6 +286,9 @@ void loop() {
 #endif
         }
     }
+    else {
+        delay(500); //longer sleep at night
+    }
 #endif
     //turn off if no motion for a while, always (no sleep hours)
     if ((displayOn == true) && ((pirTime + PIR_TIME*UNIX_SECOND) <= currentTime)){
@@ -303,6 +309,7 @@ void loop() {
         tft.print("b");
 #endif
     }
+    buttonLast = buttonInput; //update
 
     if ((lastUpdateTime + UPDATE_INTERVAL*UNIX_MINUTE) <= currentTime){
         DEBUG_PRINTLN("Auto updated");
@@ -337,22 +344,56 @@ void startWeather(){
     }
 }
 
+// Set time via NTP, as required for x.509 validation
+// From ESP8266 BearSSL_Validation, author: Earle F. Philhower, III
+void setClock() {
+    //timezone, daylightoffset, servers
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov"); //utc time
+
+    DEBUG_PRINT("Waiting for NTP time sync: ");
+    time_t now = time(nullptr);
+    while (now < 8 * 3600 * 2) {
+        delay(500);
+        DEBUG_PRINT(".");
+        now = time(nullptr);
+    }
+    DEBUG_PRINTLN("");
+    struct tm timeinfo;
+    gmtime_r(&now, &timeinfo);
+    DEBUG_PRINT("Current time: ");
+    DEBUG_PRINT(asctime(&timeinfo));
+}
+
 //gets the weather from api, formats json
 bool getWeather() {
     tft.fillRect(0,DP_H-FS1, DP_W, FS1, TFT_BLACK); //clear line
     tft.setCursor(0,DP_H-FS1,1);
     tft.println("Powered by Dark Sky");
+
+#ifdef USE_CERT
+    DEBUG_PRINTLN("Setting up cert");
+    BearSSL::WiFiClientSecure client;
+    BearSSL::X509List cert(digicert);
+    client.setTrustAnchors(&cert);
+
+    setClock(); //set clock, update when getting new as drift occurs on uC
+#else
     // Connect to remote server
     client.setInsecure(); //no https
+#endif
+
     DEBUG_PRINT("connecting to ");
     DEBUG_PRINTLN(host);
     if (!client.connect(host, httpsPort)) {
-        DEBUG_PRINTLN("connection failed");
+        DEBUG_PRINTLN("Connection failed");
         tft.fillRect(0,DP_H-FS1, DP_W, FS1, TFT_BLACK); //clear line
         tft.setCursor(0,DP_H-FS1,1);
-        tft.println("connection fail");
+        tft.println("Connection fail\nCould be cert fail");
         client.stop();
-        delay(5000);
+        if(displayOn == true){
+            setBrightness(5);
+        }
+        delay(60*1000); //stop for 60 minutes
         ESP.restart(); //restart to avoid loop
         return false; //should never get here
     }
@@ -382,7 +423,7 @@ bool getWeather() {
     }
 
     //help from https://arduinojson.org/v6/assistant/
-    DEBUG_PRINT("Created doc with size:"); DEBUG_PRINTLN(capacity);
+    DEBUG_PRINT("Created doc with size:"); DEBUG_PRINT(capacity); DEBUG_PRINT(" -> ");
     DynamicJsonDocument doc(capacity);
     DeserializationError error = deserializeJson(doc, client);
 
@@ -397,7 +438,11 @@ bool getWeather() {
         DEBUG_PRINTLN("Setup failed for current");
         return false;
     }
-    setLocalTime(currentWeather.getTime()); //set time
+
+#ifndef USE_CERT
+    //setLocalTime(currentWeather.getTime()); //set time
+    setTime(currentWeather.getTime()); //if not getting ntp time
+#endif
 
     //is a work-around - sometimes does not get the icon string correctly after wakeup
     currentWeather.setIconNum(checkWeatherIcon(currentWeather.getIcon()));
@@ -696,14 +741,13 @@ void printIconNum(uint8_t num){
 
 //prints icon from storage
 void printIcon(const char *icon){
-    DEBUG_PRINT(icon);
-    DEBUG_PRINT(" ");
+    DEBUG_PRINT(icon); DEBUG_PRINT(" ");
 
     char temp[25] = "/";
     strcat(temp, icon); //always has a file
     strcat(temp, ".bmp");
 
-    DEBUG_PRINTLN(temp);
+    DEBUG_PRINT(temp); DEBUG_PRINT(" ---- ");
 
     drawBmp(temp, tft.getCursorX(), tft.getCursorY()); //just in case
 }

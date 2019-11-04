@@ -8,7 +8,7 @@
 #include <Ticker.h>     //for interrupts
 
 #define pwmOut D3       //output pin for PWM, could be led
-#define autoBrightnessDef //uncomment to use step brightness
+#define autoBrightnessDef //comment to use step brightness
 //#define useLED        //uncomment to use leds
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
