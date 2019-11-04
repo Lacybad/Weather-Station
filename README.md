@@ -1,6 +1,6 @@
 # Weather Station
 
-<img align="right" width="400"
+<img align="right" width="300"
 src="https://user-images.githubusercontent.com/10273995/68053467-388dcb00-fca9-11e9-84e9-5c2e924aef77.jpg">
 This weather station uses an ESP8266 (WeMos D1 Mini), a TFT KMR-1.8 LCD display, a PIR
 motion sensor, BJTs and a photoresistor for the display brightness, and an optional 1-wire
