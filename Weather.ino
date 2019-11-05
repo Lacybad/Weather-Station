@@ -54,7 +54,8 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 #define FSX2 8
 #define FS4 26          //could be 32
 //FS6=48, FS7=56/48, FS8=56/75  //either or
-#define pwmRange 16     //16 bits
+#define pwmShift 6          //also change brightness max
+#define pwmRange 1<<pwmShift
 #define pwmFreq 1000      //1kHz frequency
 #define pwmOut D3       //output pin for brightness
 #define pirPin D2
@@ -154,8 +155,8 @@ void LED(bool led_output){
 //updates the current brightness, changes slowly
 void updateBrightness(){
     rawBrightness = analogRead(A0);
-    newBrightness = rawBrightness>>6; //change range: 0-2^(10-x) range
-    if (newBrightness > 50){
+    newBrightness = rawBrightness>>(10-pwmShift); //change range: 0-2^(10-x) range
+    if (newBrightness > 50){ //if using 6
         newBrightness = 50; //set brightness limit
     }
 
@@ -164,11 +165,13 @@ void updateBrightness(){
     }
     if (newBrightness > oldBrightness){
         oldBrightness++;
+        setBrightness(oldBrightness);
     }
     else if (newBrightness < oldBrightness){
         oldBrightness--;
+        setBrightness(oldBrightness);
     }
-    setBrightness(oldBrightness);
+    //else - no change
 }
 
 //turns the display off (along with brightness) or on
