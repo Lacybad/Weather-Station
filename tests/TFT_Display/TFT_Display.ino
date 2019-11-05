@@ -10,11 +10,13 @@
 #define pwmOut D3       //output pin for PWM, could be led
 #define autoBrightnessDef //comment to use step brightness
 //#define useLED        //uncomment to use leds
+#define adjustment 8    //10 - x (needs to be 2 or higher)
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 Ticker tftBrightness;
 
 uint16_t i;
+uint8_t j=0;
 bool ledOutput = false;
 volatile uint16_t rawAnalog = 0;
 float voltage= 0;
@@ -32,17 +34,30 @@ void updateBrightness();
 
 void updateBrightness(){
     rawAnalog = analogRead(A0);
-    uint8_t newBrightness = rawAnalog>>6;
-    if (newBrightness < 1){ //else display off
-        newBrightness = 1;
+    rawAnalog = rawAnalog >> (10 - adjustment);
+    if (rawAnalog < 1){ //else display off
+        rawAnalog = 1;
     }
-    if (newBrightness > oldBrightness){
+    if (rawAnalog > oldBrightness){
         oldBrightness++;
+        analogWrite(pwmOut, oldBrightness); //1024>>6 to 16 bit
     }
-    if (newBrightness < oldBrightness){
+    if (rawAnalog < oldBrightness){
         oldBrightness--;
+        analogWrite(pwmOut, oldBrightness); //1024>>6 to 16 bit
     }
-    analogWrite(pwmOut, oldBrightness); //1024>>6 to 16 bit
+#ifdef autoBrightnessDef
+    Serial.print("ADC: ");
+    Serial.print(rawAnalog);
+    Serial.print(" >> ");
+    Serial.print(oldBrightness);
+    Serial.print(" ");
+    j++;
+    if(j>5){
+        j = 0;
+        Serial.print("\n");
+    }
+#endif
 }
 
 void setupLED(){
@@ -51,7 +66,7 @@ void setupLED(){
 }
 
 void setupPWM(){
-    analogWriteRange(16);
+    analogWriteRange(1<<adjustment);
     analogWriteFreq(1000);
     pinMode(pwmOut, OUTPUT);
     analogWrite(pwmOut, 1);
@@ -77,19 +92,10 @@ void setup(void) {
 }
 
 void loop(){
-#ifdef autoBrightnessDef
-    autoBrightness();           //for auto adjusting each brightness
-#else
+#ifndef autoBrightnessDef
     stepIncreaseBrightness(); //for going through each brightness
 #endif
     delay(2000);
-}
-
-void autoBrightness(){
-    Serial.print("ADC: ");
-    Serial.print(rawAnalog);
-    Serial.print(" >> ");
-    Serial.println(rawAnalog>>6);
 }
 
 void stepIncreaseBrightness(){

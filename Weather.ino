@@ -54,7 +54,8 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 #define FSX2 8
 #define FS4 26          //could be 32
 //FS6=48, FS7=56/48, FS8=56/75  //either or
-#define pwmShift 6          //also change brightness max
+#define displayUpdate 1000  //in ms
+#define pwmShift 7          //also change brightness max
 #define pwmRange 1<<pwmShift
 #define pwmFreq 1000      //1kHz frequency
 #define pwmOut D3       //output pin for brightness
@@ -156,9 +157,6 @@ void LED(bool led_output){
 void updateBrightness(){
     rawBrightness = analogRead(A0);
     newBrightness = rawBrightness>>(10-pwmShift); //change range: 0-2^(10-x) range
-    if (newBrightness > 50){ //if using 6
-        newBrightness = 50; //set brightness limit
-    }
 
     if (newBrightness < 1){
         newBrightness = 1; //never be zero or else off
@@ -178,7 +176,7 @@ void updateBrightness(){
 void displayOnOff(){
     if (displayOn == false){
         DEBUG_PRINTLN("Turning display on");
-        tftBrightness.attach_ms(500, updateBrightness); //call every 500ms
+        tftBrightness.attach_ms(displayUpdate, updateBrightness); //call every 500ms
         flashScreen(); //clear screen
         updateBrightness();
         displayOn = true;
@@ -257,7 +255,6 @@ void loop() {
     currentTime = millis(); //time since started
 
 #ifdef PIR_TIME
-    //currentHour = hour(tz.toLocal(now()));
     currentHour = hour(now());
 #ifdef PIR_OFF_TIME_MORNING
     if (currentHour >= PIR_ON_TIME || currentHour < PIR_OFF_TIME){ //only during day
@@ -294,7 +291,7 @@ void loop() {
         }
     }
     else {
-        delay(500); //longer sleep at night
+        delay(450); //longer sleep at night
     }
 #endif
     //turn off if no motion for a while, always (no sleep hours)
