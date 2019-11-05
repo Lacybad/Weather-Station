@@ -99,7 +99,7 @@ uint16_t cursorY;
 char displayOutput[10];
 volatile uint16_t rawBrightness; //10 bit number
 volatile uint8_t newBrightness;
-volatile uint8_t oldBrightness = 0;
+volatile uint8_t oldBrightness = 1;
 volatile bool displayOn = false;
 
 //motion vars
@@ -125,7 +125,8 @@ void setClock();
 bool getWeather();
 void printWeatherDisplay();
 inline void printTFTSpace(uint8_t i);
-void timeToLocal(time_t getLocalTime);
+void timeLocalStr(time_t getTime);
+void timeStr(time_t getTime);
 void setLocalTime(time_t getLocalTime);
 void colorPrecip(int color);
 void colorHumid(int color);
@@ -179,7 +180,7 @@ void displayOnOff(){
         updateBrightness();
         displayOn = true;
 #ifdef DEBUG
-        LED(false);
+        LED(true);
 #endif
     }
     else {
@@ -189,7 +190,7 @@ void displayOnOff(){
         setBrightness(0);
         displayOn = false;
 #ifdef DEBUG
-        LED(true);
+        LED(false);
 #endif
     }
 }
@@ -243,6 +244,8 @@ void setup() {
 #ifdef DEBUG
     tft.setCursor(DP_W-8,0,1);
     tft.print("s");
+    currentHour = hour(now());
+    DEBUG_PRINT("Hour: "); DEBUG_PRINTLN(currentHour);
 #endif
 }
 
@@ -251,7 +254,8 @@ void loop() {
     currentTime = millis(); //time since started
 
 #ifdef PIR_TIME
-    currentHour = hour(tz.toLocal(now()));
+    //currentHour = hour(tz.toLocal(now()));
+    currentHour = hour(now());
 #ifdef PIR_OFF_TIME_MORNING
     if (currentHour >= PIR_ON_TIME || currentHour < PIR_OFF_TIME){ //only during day
 #else
@@ -344,13 +348,12 @@ void startWeather(){
     }
 }
 
-// Set time via NTP, as required for x.509 validation
-// From ESP8266 BearSSL_Validation, author: Earle F. Philhower, III
+//set time via NTP, for tls (X.509) certificate
+//From ESP8266 example HTTPSRequestCSCertAxTLS
 void setClock() {
+    DEBUG_PRINT("Setting time using SNTP: ");
     //timezone, daylightoffset, servers
     configTime(0, 0, "pool.ntp.org", "time.nist.gov"); //utc time
-
-    DEBUG_PRINT("Waiting for NTP time sync: ");
     time_t now = time(nullptr);
     while (now < 8 * 3600 * 2) {
         delay(500);
@@ -358,10 +361,11 @@ void setClock() {
         now = time(nullptr);
     }
     DEBUG_PRINTLN("");
-    struct tm timeinfo;
-    gmtime_r(&now, &timeinfo);
-    DEBUG_PRINT("Current time: ");
-    DEBUG_PRINT(asctime(&timeinfo));
+    setLocalTime(now);
+    //struct tm timeinfo;
+    //gmtime_r(&now, &timeinfo);
+    //DEBUG_PRINT("Current time: ");
+    //DEBUG_PRINT(asctime(&timeinfo));
 }
 
 //gets the weather from api, formats json
@@ -477,7 +481,7 @@ void printWeatherDisplay(){
     //current weather
     tft.setCursor(tft.getCursorX()+1,tft.getCursorY());
     tft.print("Updated: ");
-    timeToLocal(currentWeather.getTime());
+    timeLocalStr(currentWeather.getTime());
     tft.println(displayOutput);
     cursorY = tft.getCursorY();
     tft.setCursor((DP_HALF_W - LARGE_ICON)>>1,cursorY);
@@ -509,22 +513,22 @@ void printWeatherDisplay(){
 
     cursorY = tft.getCursorY();
     tft.setCursor(4,cursorY,1);
-    timeToLocal(dailyWeather[0].getSunriseTime());
+    timeLocalStr(dailyWeather[0].getSunriseTime());
     tft.println(displayOutput);
     tft.setCursor(DP_HALF_W + (SMALL_ICON>>1)+2, cursorY);
-    timeToLocal(dailyWeather[0].getSunsetTime());
+    timeLocalStr(dailyWeather[0].getSunsetTime());
     tft.println(displayOutput);
     cursorY = tft.getCursorY();
 
     tft.setCursor(DP_HALF_W-(SMALL_ICON>>1), cursorY-(SMALL_ICON>>1)); //divide 2
     if (currentWeather.getTime() < dailyWeather[0].getSunriseTime() ||
             currentWeather.getTime() > dailyWeather[0].getSunsetTime()){
-        printIcon(SUNRISE_ICON);
-        tft.drawLine(8, cursorY, DP_HALF_W - (SMALL_ICON>>1) - 4, cursorY, TFT_WHITE);
+        printIcon(SUNRISE_ICON); //is after sunset or before sunrise
+        tft.drawLine(4, cursorY, DP_HALF_W - (SMALL_ICON>>1) - 4, cursorY, TFT_WHITE);
     }
     else {
-        printIcon(SUNSET_ICON);
-        tft.drawLine(DP_HALF_W+(SMALL_ICON>>1) + 4, cursorY, DP_W - 8, cursorY, TFT_WHITE);
+        printIcon(SUNSET_ICON); //is after sunrise
+        tft.drawLine(DP_HALF_W+(SMALL_ICON>>1) + 4, cursorY, DP_W - 4, cursorY, TFT_WHITE);
     }
 
     tft.setCursor(tft.getCursorX(), tft.getCursorY()+FS1);
@@ -575,11 +579,23 @@ inline void printTFTSpace(uint8_t i){
 }
 
 //converts UTC to timezone
-void timeToLocal(time_t setATime){
-    setATime = tz.toLocal(setATime);
+void timeLocalStr(time_t getTime){
+    getTime = tz.toLocal(getTime);
+    //timeStr(getTime);
     snprintf(displayOutput, sizeof(displayOutput), "%02d:%02d ",
-            hourFormat12(setATime), minute(setATime));
-    if (isAM(setATime)){
+            hourFormat12(getTime), minute(getTime));
+    if (isAM(getTime)){
+        strncat(displayOutput,"AM", 2);
+    }
+    else {
+        strncat(displayOutput, "PM", 2);
+    }
+}
+
+void timeStr(time_t getTime){
+    snprintf(displayOutput, sizeof(displayOutput), "%02d:%02d ",
+            hourFormat12(getTime), minute(getTime));
+    if (isAM(getTime)){
         strncat(displayOutput,"AM", 2);
     }
     else {
@@ -588,10 +604,14 @@ void timeToLocal(time_t setATime){
 }
 
 //sets the current local time
-void setLocalTime(time_t setATime){
-    currentLocalTime = tz.toLocal(setATime);
+void setLocalTime(time_t getLocalTime){
+    currentLocalTime = tz.toLocal(getLocalTime);
     setTime(currentLocalTime);
-    DEBUG_PRINTLN("Set local time");
+#ifdef debug
+    DEBUG_PRINTLN("Set local time to:");
+    timeLocalStr(getLocalTime);
+    DEBUG_PRINT(displayOutput);
+#endif
 }
 
 //changes the color of rain to stand out more
@@ -701,27 +721,34 @@ inline uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue){
 //prints debug information
 bool printWeatherSerial(){
 #ifdef DEBUG
-    timeToLocal(currentWeather.getTime());
-    DEBUG_PRINT("Updated at: "); DEBUG_PRINTLN(displayOutput);
     char temp[120];
     if (currentWeather.getSetup()){
         DEBUG_PRINTLN("=================");
-        snprintf(temp, sizeof(temp), "Temp: %i, Rain: %i Humidity: %i, time: %ld",
+        snprintf(temp, sizeof(temp), "Temp: %i, Rain: %i Humidity: %i, time: %ld (",
                 currentWeather.getTemp(), currentWeather.getPrecipProb(),
                 currentWeather.getHumidity(), currentWeather.getTime());
-        DEBUG_PRINTLN(temp);
+        DEBUG_PRINT(temp);
+        timeLocalStr(currentWeather.getTime());
+        DEBUG_PRINT(displayOutput); DEBUG_PRINTLN(")");
     }
     else {
         return false;
     }
     for (int i=0; i<dailyWeatherSize; i++){
         if (dailyWeather[i].getSetup()){
-            snprintf(temp, sizeof(temp), "%i Temp H: %i, Temp L: %i, Rain: %i Humidity: %i, time: %ld, sunrise time: %ld, sunset time: %ld",
+            snprintf(temp, sizeof(temp), "%i Temp H: %i, Temp L: %i, Rain: %i Humidity: %i, time: %ld, sunrise time: %ld, sunset time: %ld ",
                 i, dailyWeather[i].getTempHigh(), dailyWeather[i].getTempLow(),
                 dailyWeather[i].getPrecipProb(), dailyWeather[i].getHumidity(),
                 dailyWeather[i].getTime(), dailyWeather[i].getSunriseTime(),
                 dailyWeather[i].getSunsetTime());
-            DEBUG_PRINTLN(temp);
+            DEBUG_PRINT(temp);
+        timeLocalStr(dailyWeather[i].getTime());
+        DEBUG_PRINT(" ("); DEBUG_PRINT(displayOutput); DEBUG_PRINT(")");
+        timeLocalStr(dailyWeather[i].getSunriseTime());
+        DEBUG_PRINT(" ("); DEBUG_PRINT(displayOutput); DEBUG_PRINT(")");
+        timeLocalStr(dailyWeather[i].getSunsetTime());
+        DEBUG_PRINT(" ("); DEBUG_PRINT(displayOutput); DEBUG_PRINT(")");
+        DEBUG_PRINTLN();
         }
         else {
             return false;
