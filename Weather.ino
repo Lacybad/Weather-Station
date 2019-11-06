@@ -266,7 +266,6 @@ void loop() {
         if ((pirInput == HIGH) && (pirLast == LOW)){
            //turn on display...
             pirTime = millis();
-            pirLast == pirInput; //move to last
 
             if (displayOn == false){
                 displayOnOff();
@@ -289,6 +288,7 @@ void loop() {
 #endif
 #endif
         }
+        pirLast == pirInput; //move to last
     }
     else {
         delay(450); //longer sleep at night
