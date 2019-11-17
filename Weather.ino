@@ -9,8 +9,7 @@
 #include <ArduinoJson.h>
 #include "src/weatherClass.h"
 #include "src/cert.h"       //location for cert in memory
-#include "MiscSettings.h" //D4=BUILTIN_LED,not RST
-//#include "Settings.h" //Either file
+#include "Settings.h"       //settings file
 //display //drivers - greentab, blacktab+inversion(orange)
 //For TFT_eSPI, in User_Setup.h, set TFT_DC PIN_D0 and TFT_RST PIN_D6
 #include <TFT_eSPI.h> //!!D6=RST!!,!!D0=A0/DC!!,D8=CS,D7=SDA,D5=SCL
@@ -31,8 +30,9 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
 //hint - when debugging, change the times to trigger things faster...
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
+    //#define SHOW_BRIGHTNESS
     //#define SHOW_MOTION
     #define DEBUG_PRINT(str)    Serial.print(str)
     #define DEBUG_PRINTLN(str)  Serial.println(str)
@@ -55,8 +55,8 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 #define FS4 26          //could be 32
 //FS6=48, FS7=56/48, FS8=56/75  //either or
 #define displayUpdate 1000  //in ms
-#define pwmShift 7          //also change brightness max
-#define pwmRange 1<<pwmShift
+#define pwmShift 6          //also change brightness max, 8 or less
+#define pwmRange (1<<pwmShift)-1 //max range
 #define pwmFreq 1000      //1kHz frequency
 #define pwmOut D3       //output pin for brightness
 #define pirPin D2
@@ -170,6 +170,10 @@ void updateBrightness(){
         setBrightness(oldBrightness);
     }
     //else - no change
+#ifdef SHOW_BRIGHTNESS
+    DEBUG_PRINT("b: ");
+    DEBUG_PRINT(newBrightness);
+#endif
 }
 
 //turns the display off (along with brightness) or on
@@ -208,8 +212,10 @@ void setup() {
 
 #ifdef DEBUG
     Serial.begin(115200);
-#endif
     DEBUG_PRINTLN("\nStartup");
+    DEBUG_PRINT("Brightness range: ");
+    Serial.print(pwmRange, BIN);
+#endif
 
     wifi_set_sleep_type(MODEM_SLEEP_T); //just turns off WiFi temporary
 

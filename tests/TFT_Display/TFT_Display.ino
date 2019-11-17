@@ -10,7 +10,8 @@
 #define pwmOut D3       //output pin for PWM, could be led
 #define autoBrightnessDef //comment to use step brightness
 //#define useLED        //uncomment to use leds
-#define adjustment 8    //10 - x (needs to be 2 or higher)
+#define pwm 6       //bits of range
+#define pwmOutput (1<<pwm)-1 //1023=default
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 Ticker tftBrightness;
@@ -19,6 +20,7 @@ uint16_t i;
 uint8_t j=0;
 bool ledOutput = false;
 volatile uint16_t rawAnalog = 0;
+volatile uint16_t newBrightness = 0;
 float voltage= 0;
 uint8_t oldBrightness = 0;
 
@@ -34,15 +36,15 @@ void updateBrightness();
 
 void updateBrightness(){
     rawAnalog = analogRead(A0);
-    rawAnalog = rawAnalog >> (10 - adjustment);
-    if (rawAnalog < 1){ //else display off
-        rawAnalog = 1;
+    newBrightness = rawAnalog>>(10-pwm);
+    if (newBrightness < 1){ //else display off
+        newBrightness = 1;
     }
-    if (rawAnalog > oldBrightness){
+    if (newBrightness > oldBrightness){
         oldBrightness++;
         analogWrite(pwmOut, oldBrightness); //1024>>6 to 16 bit
     }
-    if (rawAnalog < oldBrightness){
+    if (newBrightness < oldBrightness){
         oldBrightness--;
         analogWrite(pwmOut, oldBrightness); //1024>>6 to 16 bit
     }
@@ -50,10 +52,12 @@ void updateBrightness(){
     Serial.print("ADC: ");
     Serial.print(rawAnalog);
     Serial.print(" >> ");
+    Serial.print(newBrightness);
+    Serial.print("/");
     Serial.print(oldBrightness);
     Serial.print(" ");
     j++;
-    if(j>5){
+    if(j>3){
         j = 0;
         Serial.print("\n");
     }
@@ -66,7 +70,11 @@ void setupLED(){
 }
 
 void setupPWM(){
-    analogWriteRange(1<<adjustment);
+#ifdef autoBrightnessDef
+    Serial.print("Brightness range: ");
+    Serial.println(pwmOutput, BIN);
+#endif
+    analogWriteRange(pwmOutput);
     analogWriteFreq(1000);
     pinMode(pwmOut, OUTPUT);
     analogWrite(pwmOut, 1);

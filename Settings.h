@@ -1,15 +1,23 @@
-//rename to MiscSettings.h and add detail
-//Settings for wifi, keep from git
+#define _MISCSETTINGS_H
+#ifdef _MISCSETTINGS_H
+#include "MiscSettings.h" //use personal settings
+#else
+//if file is not defined
 #ifndef STASSID
 #define STASSID "SSID"
 #define STAPSK  "PSWD"
 #endif
 
 //darksky api key
-#define API_KEY "key"
+#define API_KEY "abcdef0123456789"
+#define FORECAST_LOC "/40.7828687,-73.9675438" //example, is NYC
+
+//timezone vars
+#define DAYLIGHT_RULE_CONFIG {"EDT", Second, Sun, Mar, 2, -(4*60)}
+#define STANDARD_RULE_CONFIG {"EST", First, Sun, Nov, 2, -(5*60)}
+#endif
 
 //Other vars
-#define FORECAST_LOC "/42.3601,-71.0589" //example
 #define UPDATE_INTERVAL 60UL
 #define UPDATE_INTERVAL_MOTION 15UL //optional, stops rapid update with no motion
 #define PIR_TIME 30UL    //time to keep display on, in seconds
@@ -17,7 +25,3 @@
 #define PIR_ON_TIME 5
 #define PIR_OFF_TIME 12+11
 //#define PIR_OFF_TIME_MORNING 1    //uncomment if off time is 12am or later
-
-//rule vars
-#define DAYLIGHT_RULE_CONFIG {"TZ", Second, Sun, Mar, 2, -0}
-#define STANDARD_RULE_CONFIG {"TZ", First, Sun, Nov, 2, -0}
