@@ -19,6 +19,7 @@ class Weather {
         long sunriseTime;
         long sunsetTime;
         int precipProbability;
+        float precipAmount;
         float temperatureLong;
         int temperature;
         float temperatureHighLong;
@@ -39,6 +40,7 @@ class Weather {
         long getSunriseTime();
         long getSunsetTime();
         int getPrecipProb();
+        float getPrecipAmt();
         int getTemp();
         int getTempHigh();
         int getTempLow();

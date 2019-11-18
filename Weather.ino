@@ -30,7 +30,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
 //hint - when debugging, change the times to trigger things faster...
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     //#define SHOW_BRIGHTNESS
     //#define SHOW_MOTION
@@ -55,7 +55,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 #define FS4 26          //could be 32
 //FS6=48, FS7=56/48, FS8=56/75  //either or
 #define displayUpdate 1000  //in ms
-#define pwmShift 6          //also change brightness max, 8 or less
+#define pwmShift 9          //also change brightness max
 #define pwmRange (1<<pwmShift)-1 //max range
 #define pwmFreq 1000      //1kHz frequency
 #define pwmOut D3       //output pin for brightness
@@ -75,6 +75,7 @@ const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_S
 const String forecastType = "/forecast/";
 //const String FORECAST_LOC //see define location
 const String forecastDetails = "?exclude=minutely,hourly,flags,alerts";
+const String unitText = "units=";
 #define SUNRISE_ICON "sunrise"
 #define SUNSET_ICON "sunset"
 const char *weatherIcon[] = {"clear-day", "clear-night", "rain", "snow",
@@ -131,8 +132,10 @@ void timeLocalStr(time_t getTime);
 void timeStr(time_t getTime);
 void setLocalTime(time_t getLocalTime);
 void colorPrecip(int color);
+void colorPrecipIntensity(float color);
 void colorHumid(int color);
 void printPrecip(const String typeWater, int water, uint8_t space);
+void printPrecipIntensity(float waterAmt, uint8_t space);
 void printHumid(const String typeWater, int water, uint8_t space);
 void colorTemp(int color);
 void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
@@ -214,7 +217,7 @@ void setup() {
     Serial.begin(115200);
     DEBUG_PRINTLN("\nStartup");
     DEBUG_PRINT("Brightness range: ");
-    Serial.print(pwmRange, BIN);
+    Serial.println(pwmRange, BIN);
 #endif
 
     wifi_set_sleep_type(MODEM_SLEEP_T); //just turns off WiFi temporary
@@ -410,10 +413,10 @@ bool getWeather() {
     else {
         DEBUG_PRINT("Getting forecast for: ");
         DEBUG_PRINTLN("https://" + String(host) +
-                forecastType + API_KEY + FORECAST_LOC + forecastDetails);
+                forecastType + API_KEY + FORECAST_LOC + forecastDetails + unitText + UNITS);
 
         client.print(String("GET ") + forecastType + API_KEY +
-                FORECAST_LOC + forecastDetails +
+                FORECAST_LOC + forecastDetails + unitText + UNITS
                 " HTTP/1.1\r\n" +
                 "Host: " + host + "\r\n" +
                 "User-Agent: ESP8266\r\n" +
@@ -501,7 +504,7 @@ void printWeatherDisplay(){
     tft.drawCircle(tft.getCursorX()+4, tft.getCursorY()+4, 2, TFT_WHITE); //degree symbol
     tft.setCursor(tft.getCursorX()+10, tft.getCursorY(), 2);
     tft.println("F");
-    tft.setCursor(DP_HALF_W, tft.getCursorY()+(FS1>>1), 1);
+    tft.setCursor(DP_HALF_W, tft.getCursorY()+(FS1>>1)+1, 1);
     printPrecip("Rain:", currentWeather.getPrecipProb(), 2);
 
     //Temp high/low
@@ -513,7 +516,11 @@ void printWeatherDisplay(){
     tft.setCursor(tft.getCursorX(), tft.getCursorY()-(FS1>>2), 2);
     printPrecip("Rain:", dailyWeather[0].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+6, tft.getCursorY());
+#ifdef PRECIP_INSTY
+    printPrecipIntensity(dailyWeather[0].getPrecipAmt(), 4);
+#else
     printHumid("RH:", dailyWeather[0].getHumidity(), 4);
+#endif
     tft.println();
     tft.setTextColor(TFT_WHITE);
 
@@ -570,9 +577,17 @@ void printWeatherDisplay(){
     tft.println();
 
     tft.setCursor(4,tft.getCursorY());
+#ifdef PRECIP_INSTY
+    printPrecipIntensity(dailyWeather[1].getPrecipAmt(), 4);
+#else
     printHumid("RH:", dailyWeather[2].getHumidity(), 4);
+#endif
     tft.setCursor(DP_HALF_W+2,tft.getCursorY());
+#ifdef PRECIP_INSTY
+    printPrecipIntensity(dailyWeather[2].getPrecipAmt(), 4);
+#else
     printHumid("RH:", dailyWeather[2].getHumidity(), 4);
+#endif
     tft.println();
     tft.setTextColor(TFT_WHITE);
 
@@ -630,6 +645,20 @@ void colorPrecip(int color){
     }
 }
 
+//changes the color of rain to stand out more
+void colorPrecipIntensity(float color){
+    if (color >= 0.01){
+        uint16_t blueAmt = color*100; //get rid of decimal place
+        if (blueAmt > 255){
+            blueAmt = 255;
+        }
+        tft.setTextColor(rgbToHex(0, 255 - blueAmt, 255));
+    }
+    else {
+        tft.setTextColor(TFT_WHITE);
+    }
+}
+
 //changes humidity to stand out more
 void colorHumid(int color){
     if (color > 70){
@@ -647,6 +676,15 @@ void printPrecip(const String typeWater, int water, uint8_t space){
     printTFTSpace(space);
     tft.print(water);
     tft.print("%");
+    tft.setTextColor(TFT_WHITE);
+}
+
+//prints rain in inches
+void printPrecipIntensity(float waterAmt, uint8_t space){
+    colorPrecipIntensity(waterAmt);
+    tft.print(waterAmt);
+    printTFTSpace(space);
+    tft.print(PRECIP_UNIT);
     tft.setTextColor(TFT_WHITE);
 }
 
@@ -742,9 +780,10 @@ bool printWeatherSerial(){
     }
     for (int i=0; i<dailyWeatherSize; i++){
         if (dailyWeather[i].getSetup()){
-            snprintf(temp, sizeof(temp), "%i Temp H: %i, Temp L: %i, Rain: %i Humidity: %i, time: %ld, sunrise time: %ld, sunset time: %ld ",
+            snprintf(temp, sizeof(temp), "%i Temp H: %i, Temp L: %i, Rain: %i %.3f Humidity: %i, time: %ld, sunrise time: %ld, sunset time: %ld ",
                 i, dailyWeather[i].getTempHigh(), dailyWeather[i].getTempLow(),
-                dailyWeather[i].getPrecipProb(), dailyWeather[i].getHumidity(),
+                dailyWeather[i].getPrecipProb(), dailyWeather[i].getPrecipAmt(),
+                dailyWeather[i].getHumidity(),
                 dailyWeather[i].getTime(), dailyWeather[i].getSunriseTime(),
                 dailyWeather[i].getSunsetTime());
             DEBUG_PRINT(temp);

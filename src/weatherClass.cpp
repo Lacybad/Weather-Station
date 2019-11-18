@@ -47,7 +47,13 @@ bool Weather::setupWeather(JsonObject weatherData) {
     }
 
     float tempPrecip = weatherData["precipProbability"];
-    precipProbability = (int)(100*tempPrecip);
+    precipProbability = (int)(100*tempPrecip); //convert to int
+    if (daily){
+        tempPrecip = weatherData["precipIntensity"];
+        //precipAmount = (((int)(100*tempPrecip)*24) / 100); //over 24 hours, round
+        //precipitation amount over 24 hours
+        precipAmount = ((tempPrecip*24)*100)/100;
+    }
 
     //temperature
     if(daily){
@@ -102,6 +108,10 @@ long Weather::getSunsetTime(){
 
 int Weather::getPrecipProb(){
     return precipProbability;
+}
+
+float Weather::getPrecipAmt(){
+    return precipAmount;
 }
 
 int Weather::getTemp(){

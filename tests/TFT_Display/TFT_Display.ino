@@ -10,7 +10,7 @@
 #define pwmOut D3       //output pin for PWM, could be led
 #define autoBrightnessDef //comment to use step brightness
 //#define useLED        //uncomment to use leds
-#define pwm 6       //bits of range
+#define pwm 9       //bits of range
 #define pwmOutput (1<<pwm)-1 //1023=default
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
@@ -44,7 +44,7 @@ void updateBrightness(){
         oldBrightness++;
         analogWrite(pwmOut, oldBrightness); //1024>>6 to 16 bit
     }
-    if (newBrightness < oldBrightness){
+    else if (newBrightness < oldBrightness){
         oldBrightness--;
         analogWrite(pwmOut, oldBrightness); //1024>>6 to 16 bit
     }
