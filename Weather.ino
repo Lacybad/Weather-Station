@@ -101,8 +101,8 @@ uint16_t cursorX;
 uint16_t cursorY;
 char displayOutput[10];
 volatile uint16_t rawBrightness; //10 bit number
-volatile uint8_t newBrightness;
-volatile uint8_t oldBrightness = 1;
+volatile uint16_t newBrightness;
+volatile uint16_t oldBrightness = 1;
 volatile bool displayOn = false;
 
 //motion vars
