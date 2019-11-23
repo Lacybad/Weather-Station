@@ -56,6 +56,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 //FS6=48, FS7=56/48, FS8=56/75  //either or
 #define displayUpdate 1000  //in ms
 #define pwmShift 9          //also change brightness max
+#define pwmJump 8           //min difference
 #define pwmRange (1<<pwmShift)-1 //max range
 #define pwmFreq 1000      //1kHz frequency
 #define pwmOut D3       //output pin for brightness
@@ -74,7 +75,7 @@ const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_S
 
 const String forecastType = "/forecast/";
 //const String FORECAST_LOC //see define location
-const String forecastDetails = "?exclude=minutely,hourly,flags,alerts";
+const String forecastDetails = "?exclude=minutely,hourly,flags,alerts,";
 const String unitText = "units=";
 #define SUNRISE_ICON "sunrise"
 #define SUNSET_ICON "sunset"
@@ -164,14 +165,17 @@ void updateBrightness(){
     if (newBrightness < 1){
         newBrightness = 1; //never be zero or else off
     }
+    //jump function
+    if (abs(newBrightness-oldBrightness) > pwmJump){
+        oldBrightness = newBrightness; //jump if large difference
+    }
     if (newBrightness > oldBrightness){
         oldBrightness++;
-        setBrightness(oldBrightness);
     }
     else if (newBrightness < oldBrightness){
         oldBrightness--;
-        setBrightness(oldBrightness);
     }
+    setBrightness(oldBrightness);
     //else - no change
 #ifdef SHOW_BRIGHTNESS
     DEBUG_PRINT("b: ");
@@ -352,7 +356,6 @@ void startWeather(){
     }
     else {
         DEBUG_PRINTLN("Parse FAILED");
-        clearScreen(2);
         tft.println("Parse FAILED");
     }
 }
