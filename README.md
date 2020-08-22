@@ -1,3 +1,8 @@
+# DarkSky Update
+
+[DarkSky has turned off their API](https://blog.darksky.net/), so this project will be
+switching to [OpenWeatherMap](https://openweathermap.org/darksky-openweather).
+
 # Weather Station
 
 <img align="right" width="300"
