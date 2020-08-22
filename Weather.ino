@@ -8,7 +8,7 @@
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include "src/weatherClass.h"
-#include "src/cert.h"       //location for cert in memory
+//#include "src/cert.h"       //location for cert in memory
 #include "Settings.h"       //settings file
 //display //drivers - greentab, blacktab+inversion(orange)
 //For TFT_eSPI, in User_Setup.h, set TFT_DC PIN_D0 and TFT_RST PIN_D6
@@ -30,7 +30,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
 //hint - when debugging, change the times to trigger things faster...
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
     //#define SHOW_BRIGHTNESS
     //#define SHOW_MOTION
@@ -68,15 +68,23 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 // Constant variables
 const char *ssid = STASSID;
 const char *password = STAPSK;
-const char *host = "api.darksky.net";
-const int httpsPort = 443;
-const size_t capacity = JSON_ARRAY_SIZE(8) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) +
-    JSON_OBJECT_SIZE(19) + 4*JSON_OBJECT_SIZE(38) + 4*JSON_OBJECT_SIZE(39) + 6180;
+const char *host = "api.openweathermap.org";
+#ifdef USE_CERT
+    const int httpsPort = 443;
+    const String httpsProtocol="HTTP/1.1";
+#else
+    const int httpsPort = 80; //is http
+    const String httpsProtocol="HTTP/1.0";
+#endif
+const size_t capacity = 9*JSON_ARRAY_SIZE(1) + JSON_ARRAY_SIZE(8) + 17*JSON_OBJECT_SIZE(4)
+    + 9*JSON_OBJECT_SIZE(6) + 9*JSON_OBJECT_SIZE(14) + 2000;
 
-const String forecastType = "/forecast/";
+const String forecastType = "/data/2.5/onecall";
 //const String FORECAST_LOC //see define location
-const String forecastDetails = "?exclude=minutely,hourly,flags,alerts,";
-const String unitText = "units=";
+const String forecastDetails = "exclude=minutely,hourly,flags,alerts";
+const String forecastStr = forecastType + "?" + FORECAST_LOC + "&" + forecastDetails +
+"&units=" + UNITS + "&appid=" + API_KEY;
+
 #define SUNRISE_ICON "sunrise"
 #define SUNSET_ICON "sunset"
 const char *weatherIcon[] = {"clear-day", "clear-night", "rain", "snow",
@@ -384,18 +392,19 @@ void setClock() {
 bool getWeather() {
     tft.fillRect(0,DP_H-FS1, DP_W, FS1, TFT_BLACK); //clear line
     tft.setCursor(0,DP_H-FS1,1);
-    tft.println("Powered by Dark Sky");
+    tft.println("Powered by OpenWeatherMap");
 
 #ifdef USE_CERT
     DEBUG_PRINTLN("Setting up cert");
     BearSSL::WiFiClientSecure client;
     BearSSL::X509List cert(digicert);
     client.setTrustAnchors(&cert);
+    //client.setInsecure(); //no https
 
     setClock(); //set clock, update when getting new as drift occurs on uC
 #else
     // Connect to remote server
-    client.setInsecure(); //no https
+    WiFiClient client;
 #endif
 
     DEBUG_PRINT("connecting to ");
@@ -404,7 +413,11 @@ bool getWeather() {
         DEBUG_PRINTLN("Connection failed");
         tft.fillRect(0,DP_H-FS1, DP_W, FS1, TFT_BLACK); //clear line
         tft.setCursor(0,DP_H-FS1,1);
+#ifdef USE_CERT
         tft.println("Connection fail\nCould be cert fail");
+#else
+        tft.println("Connection fail");
+#endif
         client.stop();
         if(displayOn == true){
             setBrightness(5);
@@ -415,25 +428,25 @@ bool getWeather() {
     }
     else {
         DEBUG_PRINT("Getting forecast for: ");
-        DEBUG_PRINTLN("https://" + String(host) +
-                forecastType + API_KEY + FORECAST_LOC + forecastDetails + unitText + UNITS);
+        DEBUG_PRINTLN("https://" + String(host) + forecastStr);
 
-        client.print(String("GET ") + forecastType + API_KEY +
-                FORECAST_LOC + forecastDetails + unitText + UNITS
-                " HTTP/1.1\r\n" +
+        client.print(String("GET ") + forecastStr + " " + httpsProtocol + "\r\n" +
                 "Host: " + host + "\r\n" +
                 "User-Agent: ESP8266\r\n" +
                 "Connection: close\r\n\r\n");
 
         DEBUG_PRINTLN("request sent");
-        while (client.connected()) {
-            String line = client.readStringUntil('\n');
-            if (line == "\r") {
-                DEBUG_PRINTLN("headers received");
-                tft.fillRect(0,DP_H-FS1, DP_W, FS1, TFT_BLACK); //clear line
-                tft.setCursor(0,DP_H-FS1,1);
-                tft.println("Got forecast");
-                break;
+        while (client.connected() || client.available()) {
+            if (client.available()){
+                String line = client.readStringUntil('\n');
+                //DEBUG_PRINTLN(line); //print header
+                if (line == "\r") {
+                    DEBUG_PRINTLN("headers received");
+                    tft.fillRect(0,DP_H-FS1, DP_W, FS1, TFT_BLACK); //clear line
+                    tft.setCursor(0,DP_H-FS1,1);
+                    tft.println("Got forecast");
+                    break;
+                }
             }
         }
     }
@@ -441,15 +454,35 @@ bool getWeather() {
     //help from https://arduinojson.org/v6/assistant/
     DEBUG_PRINT("Created doc with size:"); DEBUG_PRINT(capacity); DEBUG_PRINT(" -> ");
     DynamicJsonDocument doc(capacity);
-    DeserializationError error = deserializeJson(doc, client);
+    DeserializationError error = deserializeJson(doc, client.readStringUntil('\n'));
+    tft.println(" - parsed");
+    DEBUG_PRINT("Parse Status: ");
 
     if (error){
         DEBUG_PRINT("Parse failed - ");
         DEBUG_PRINTLN(error.c_str());
         tft.println("JSON parse failed");
+        delay(1*1000);
         return false;
     }
-    bool output = currentWeather.setupWeather(doc["currently"]);
+    else {
+        //check if can get any key
+        DEBUG_PRINTLN("Parse succeeded");
+        const char *error = doc["lat"];
+        if (error == NULL){
+            DEBUG_PRINT("Checking if message exists: ");
+            const char *msg = doc["message"];
+            if (msg != NULL){
+                DEBUG_PRINTLN(msg);
+                clearScreen(1);
+                tft.println(msg);
+            }
+            return false;
+        }
+    }
+
+    DEBUG_PRINTLN("Getting Data");
+    bool output = currentWeather.setupWeather(doc["currently"], false);
     if (output == false){
         DEBUG_PRINTLN("Setup failed for current");
         return false;
@@ -464,7 +497,7 @@ bool getWeather() {
     currentWeather.setIconNum(checkWeatherIcon(currentWeather.getIcon()));
 
     for (int i=0; i<dailyWeatherSize; i++){
-        output = dailyWeather[i].setupWeather(doc["daily"]["data"][i]);
+        output = dailyWeather[i].setupWeather(doc["daily"][i], true);
         if (output == false){
             DEBUG_PRINTLN("Setup failed for daily");
             return false;
@@ -474,6 +507,7 @@ bool getWeather() {
 
     DEBUG_PRINTLN("Done!");
     lastUpdateTime = millis();
+    client.stop();
     return true;
 }
 
@@ -858,7 +892,7 @@ inline void clearScreen(int textSize){
 //quick connection to wifi
 void connectToWifi(){
     if (!haveSetup){
-        tft.println("Powered by\nDark Sky");
+        tft.println("Powered by\nOpenWeatherMap");
         WiFi.forceSleepWake(); delay(1);
         DEBUG_PRINT("Connecting to ");
         DEBUG_PRINTLN(ssid);

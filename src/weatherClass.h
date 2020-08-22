@@ -30,7 +30,7 @@ class Weather {
 
     public:
         Weather();
-        bool setupWeather(JsonObject weatherData);
+        bool setupWeather(JsonObject weatherData, bool ifDaily);
         bool getSetup();
         bool isDaily();
         long getTime();

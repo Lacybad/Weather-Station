@@ -12,44 +12,35 @@ Weather::Weather() {
     setup = false;
 }
 
-bool Weather::setupWeather(JsonObject weatherData) {
+bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
     //const char* weatherType;
     //https://arduinojson.org/v6/api/jsonobject/containskey/
-    //weatherType = weatherData["temperatureHigh"]; //check if daily
-    //if (weatherType) { //check if not null
-    if (weatherData.containsKey("temperatureHigh")) { //check if not null
-        daily = true;
+    const char* error = weatherData["clouds"];
+    if (error) { //check if null or error
+        setup = false;
+        return false;
     }
-    else {
-        //weatherType = weatherData["temperature"]; //check if current
-        if (weatherData.containsKey("temperature")){
-            daily = false;
-        }
-        else { //is an error
-            setup = false;
-            return false;
-        }
-    }
+    daily = ifDaily;
 
     time = weatherData["time"];
 
-    icon = weatherData["icon"];
+    icon = weatherData["weather"]["icon"];
     iconNum = 0; //by default
 
     //sunset/sunrise time
     if (daily){
-        sunriseTime = weatherData["sunriseTime"];
-        sunsetTime = weatherData["sunsetTime"];
+        sunriseTime = weatherData["sunrise"];
+        sunsetTime = weatherData["sunset"];
     }
     else {
         sunriseTime = 0;
         sunsetTime = 0;
     }
 
-    float tempPrecip = weatherData["precipProbability"];
+    float tempPrecip = weatherData["pop"]; //precipitation probability
     precipProbability = (int)(100*tempPrecip); //convert to int
     if (daily){
-        tempPrecip = weatherData["precipIntensity"];
+        tempPrecip = weatherData["rain"];
         //precipAmount = (((int)(100*tempPrecip)*24) / 100); //over 24 hours, round
         //precipitation amount over 24 hours
         precipAmount = ((tempPrecip*24)*100)/100;
@@ -57,12 +48,12 @@ bool Weather::setupWeather(JsonObject weatherData) {
 
     //temperature
     if(daily){
-        temperatureHighLong = weatherData["apparentTemperatureHigh"];
-        temperatureLowLong = weatherData["apparentTemperatureLow"];
+        temperatureHighLong = weatherData["feels_like"]["day"];
+        temperatureLowLong = weatherData["feels_like"]["night"];
         temperatureLong = temperatureHighLong;
     }
     else {
-        temperatureLong = weatherData["apparentTemperature"];
+        temperatureLong = weatherData["feels_like"];
         temperatureHighLong = temperatureLong;
         temperatureLowLong = temperatureLong;
     }
