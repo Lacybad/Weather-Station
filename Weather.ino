@@ -97,9 +97,6 @@ Weather currentWeather;
 #define dailyWeatherSize 3
 Weather dailyWeather[dailyWeatherSize]; //weather for today, tomorrow, and day+1
 int16_t timezoneOffset = 0;
-//TimeChangeRule daylightRule = DAYLIGHT_RULE_CONFIG;
-//TimeChangeRule standardRule = STANDARD_RULE_CONFIG;
-//Timezone tz(daylightRule, standardRule);
 bool haveSetup = false;
 
 //display vars
@@ -534,7 +531,7 @@ void printWeatherDisplay(){
     timeLocalStr(currentWeather.getTime());
     tft.println(displayOutput);
     cursorY = tft.getCursorY();
-    tft.setCursor((DP_HALF_W - LARGE_ICON)>>1,cursorY);
+    tft.setCursor((DP_HALF_W - LARGE_ICON)>>1,cursorY+1);
     printIcon(currentWeather.getIcon());
 
     //Current Temp
@@ -585,7 +582,7 @@ void printWeatherDisplay(){
         tft.drawLine(DP_HALF_W+(SMALL_ICON>>1) + 4, cursorY, DP_W - 4, cursorY, TFT_WHITE);
     }
 
-    tft.setCursor(tft.getCursorX(), tft.getCursorY()+FS1);
+    tft.setCursor(tft.getCursorX(), tft.getCursorY()+FS1-1);
 
     //next day forecast
     tft.setTextColor(TFT_WHITE);

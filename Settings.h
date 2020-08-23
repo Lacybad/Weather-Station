@@ -2,22 +2,18 @@
 #ifdef _MISCSETTINGS_H
 #include "MiscSettings.h" //use personal settings
 #else
+
 //if file is not defined
 #ifndef STASSID
 #define STASSID "SSID"
 #define STAPSK  "PSWD"
 #endif
-
 //OpenWeatherMap api key (example)
 #define API_KEY "abcdef0123456789"
 //example, is NYC
 #define LAT "40.7828687"
 #define LON "-73.9675438"
 #define FORECAST_LOC "lat=" LAT "&lon=" LON
-
-//timezone vars
-#define DAYLIGHT_RULE_CONFIG {"EDT", Second, Sun, Mar, 2, -(4*60)}
-#define STANDARD_RULE_CONFIG {"EST", First, Sun, Nov, 2, -(5*60)}
 #endif
 
 //Other vars

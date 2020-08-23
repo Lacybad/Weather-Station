@@ -65,18 +65,21 @@ bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
     const String tempStr = "temp"; //temp or feels_like
     //temperature
     if(daily){
-        temperatureHighLong = weatherData[tempStr]["day"];
-        temperatureLowLong = weatherData[tempStr]["night"];
+        temperatureHighLong = weatherData["temp"]["day"];
+        temperatureLowLong = weatherData["temp"]["night"];
         temperatureLong = temperatureHighLong;
+        temperatureApproxLong = weatherData["feels_like"]["day"];
     }
     else {
-        temperatureLong = weatherData[tempStr];
+        temperatureLong = weatherData["temp"];
         temperatureHighLong = temperatureLong;
         temperatureLowLong = temperatureLong;
+        temperatureApproxLong = weatherData["feels_like"];
     }
     temperature = round(temperatureLong);
     temperatureHigh = round(temperatureHighLong);
     temperatureLow = round(temperatureLowLong);
+    temperatureApprox = round(temperatureApproxLong);
 
     float humidityLong = weatherData["humidity"];
     humidity = (int)round(100*humidityLong);
@@ -124,6 +127,10 @@ int Weather::getTempHigh(){
 
 int Weather::getTempLow(){
     return temperatureLow;
+}
+
+int Weather::getTempApprox(){
+    return temperatureApprox;
 }
 
 int Weather::getHumidity(){

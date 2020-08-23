@@ -30,6 +30,7 @@ WIFLAG_SMALL = -trim -resize $(WI_S) $(WIFLAG_CROP) -extent $(WI_S) $(WIFLAG_COL
 default: upload
 
 gui: openGUI
+arduino: openGUI
 openGUI:
 	$(ARDUINO_PRGM) $(SRC)
 
