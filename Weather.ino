@@ -87,10 +87,6 @@ const String forecastStr = forecastType + "?" + FORECAST_LOC + "&" + forecastDet
 
 #define SUNRISE_ICON "sunrise"
 #define SUNSET_ICON "sunset"
-const char *weatherIcon[] = {"na", "clear-day", "clear-night", "rain", "snow",
-    "sleet", "wind", "fog", "cloudy", "partly-cloudy-day", "partly-cloudy-night",
-    "hail", "thunderstorm", "tornado", SUNRISE_ICON, SUNSET_ICON, "na"};
-#define weatherIconSize 17
 
 //global variables
 TFT_eSPI tft = TFT_eSPI(); //start library
@@ -153,7 +149,6 @@ void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
 void printTemp(int tempH, int tempL, uint8_t space);
 inline uint16_t rgbToHex(uint8_t red, uint8_t green, uint8_t blue);
 bool printWeatherSerial();
-void printIconNum(uint8_t num);
 void printIcon(const char *icon);
 int checkWeatherIcon(const char *icon);
 inline void clearScreen(int textSize);
@@ -500,9 +495,7 @@ bool getWeather() {
         DEBUG_PRINT(" -> "); DEBUG_PRINTLN(displayOutput);
 
     //is a work-around - sometimes does not get the icon string correctly after wakeup
-    DEBUG_PRINT("Getting Icon "); DEBUG_PRINT(currentWeather.getIcon());
-    currentWeather.setIconNum(checkWeatherIcon(currentWeather.getIcon()));
-    DEBUG_PRINT(" - found");
+    DEBUG_PRINT(" "); DEBUG_PRINTLN(currentWeather.getIcon());
 
     for (int i=0; i<dailyWeatherSize; i++){
         output = dailyWeather[i].setupWeather(doc["daily"][i], true);
@@ -513,7 +506,6 @@ bool getWeather() {
         else {
             DEBUG_PRINT("Setup daily ");
         }
-        dailyWeather[i].setIconNum(checkWeatherIcon(dailyWeather[i].getIcon()));
     }
 
     DEBUG_PRINTLN("\nDone!");
@@ -542,7 +534,7 @@ void printWeatherDisplay(){
     tft.println(displayOutput);
     cursorY = tft.getCursorY();
     tft.setCursor((DP_HALF_W - LARGE_ICON)>>1,cursorY);
-    printIconNum(currentWeather.getIconNum());
+    printIcon(currentWeather.getIcon());
 
     //Current Temp
     tft.setCursor(DP_HALF_W, cursorY, 4);
@@ -600,9 +592,9 @@ void printWeatherDisplay(){
     tft.drawLine(DP_HALF_W - 1, cursorY - (FS1>>2), DP_HALF_W - 1, DP_H - (FS1>>2), TFT_DARKGREY);
 
     tft.setCursor(8,cursorY - (FS1>>1)+1);
-    printIconNum(dailyWeather[1].getIconNum());
+    printIcon(dailyWeather[1].getIcon());
     tft.setCursor(DP_HALF_W+8,tft.getCursorY());
-    printIconNum(dailyWeather[2].getIconNum());
+    printIcon(dailyWeather[2].getIcon());
 
     tft.setCursor(20, cursorY - FS2, 2);
     tft.print(dayShortStr(weekday(dailyWeather[1].getTime())));
@@ -851,14 +843,6 @@ bool printWeatherSerial(){
 #endif
 }
 
-//prints icon number in array, outputs string
-void printIconNum(uint8_t num){
-    if (num >= (weatherIconSize-1)){
-        num = weatherIconSize-1; //set as na
-    }
-    printIcon(weatherIcon[num]);
-}
-
 //prints icon from storage
 void printIcon(const char *icon){
     DEBUG_PRINT(icon); DEBUG_PRINT(" ");
@@ -867,47 +851,14 @@ void printIcon(const char *icon){
     strcat(temp, icon); //always has a file
     strcat(temp, ".bmp");
 
+    if (!SPIFFS.exists(temp)){
+       DEBUG_PRINTLN("Using default na");
+       strcpy(temp, "/na.bmp");
+    }
+
     DEBUG_PRINT(temp); DEBUG_PRINT(" ---- ");
 
     drawBmp(temp, tft.getCursorX(), tft.getCursorY()); //just in case
-}
-
-//DarkSky names
-//"clear-day", "clear-night", "rain", "snow", "sleet", "wind", "fog", "cloudy", "hail",
-//"partly-cloudy-day", "partly-cloudy-night", "thunderstorm", "tornado", SUNRISE_ICON, SUNSET_ICON, "na"
-//checks if string is valid
-int checkWeatherIcon(const char *icon){
-    if (icon == NULL){
-        return 0;
-    }
-
-    char weatherName[20];
-
-    //sigh, manually comparing -https://openweathermap.org/weather-conditions#Icon-list
-    const char* owmIcons[] = {"01d", "01n", "02d", "02n",
-        "03d", "03n", "04d", "04n", "09d", "09n", "10d", "10n",
-        "11d", "11n", "13d", "13n", "50d", "50n"};
-    const uint8_t owmSize = 9*2;
-    const char* dkIcons[] = {"clear-day", "clear-night", "partly-cloudy-day", "partly-cloudy-night",
-        "cloudy", "cloudy", "cloudy", "cloudy", "rain", "rain", "rain", "rain",
-        "tunderstorm", "thunderstorm", "snow", "snow", "fog", "fog"};
-    for (int i=0; i<owmSize; i++){
-        if (owmIcons[i] == icon){
-            strncpy(weatherName, dkIcons[i], 19);
-        }
-    }
-    if (weatherName == NULL){
-        strncpy(weatherName, "na", 2);
-    }
-
-    //loop through, string compare
-    for (int i=0; i<weatherIconSize; i++){
-        if (strcmp(weatherName, weatherIcon[i]) == 0){
-            return i;
-        }
-    }
-    //do not know icon, return default unknown
-    return 0;
 }
 
 //flash screen to remove stuck pixels

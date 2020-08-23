@@ -15,6 +15,7 @@ Weather::Weather() {
 bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
     //const char* weatherType;
     //https://arduinojson.org/v6/api/jsonobject/containskey/
+    //https://arduinojson.org/v6/assistant/
     const char* error = weatherData["clouds"];
     if (error) { //check if null or error
         setup = false;
@@ -24,9 +25,23 @@ bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
 
     time = weatherData["dt"]; //time of forecast
 
-    const char* tempIcon = weatherData["weather"]["icon"];
+    const char* temp = weatherData["weather"][0]["icon"];
 
-    iconNum = 0; //by default
+    const char* owmIcons[] = {"01d", "01n", "02d", "02n",
+        "03d", "03n", "04d", "04n", "09d", "09n", "10d", "10n",
+        "11d", "11n", "13d", "13n", "50d", "50n"};
+    const uint8_t owmSize = 9*2;
+    const char* dkIcons[] = {"clear-day", "clear-night", "partly-cloudy-day", "partly-cloudy-night",
+        "cloudy", "cloudy", "cloudy", "cloudy", "rain", "rain", "rain", "rain",
+        "tunderstorm", "thunderstorm", "snow", "snow", "fog", "fog"};
+    for (int i=0; i<owmSize; i++){
+        if (strcmp(owmIcons[i], temp) == 0){
+            icon = dkIcons[i];
+        }
+    }
+    if (icon == NULL){
+        icon = "na";
+    }
 
     //sunset/sunrise time
     if (daily){
@@ -81,14 +96,6 @@ long Weather::getTime(){
 
 const char* Weather::getIcon(){
     return icon;
-}
-
-void Weather::setIconNum(uint8_t num){
-    iconNum = num; //optional
-}
-
-uint8_t Weather::getIconNum(){
-    return iconNum;
 }
 
 long Weather::getSunriseTime(){
