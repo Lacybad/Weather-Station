@@ -22,9 +22,10 @@ bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
     }
     daily = ifDaily;
 
-    time = weatherData["time"];
+    time = weatherData["dt"]; //time of forecast
 
-    icon = weatherData["weather"]["icon"];
+    const char* tempIcon = weatherData["weather"]["icon"];
+
     iconNum = 0; //by default
 
     //sunset/sunrise time
@@ -46,14 +47,15 @@ bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
         precipAmount = ((tempPrecip*24)*100)/100;
     }
 
+    const String tempStr = "temp"; //temp or feels_like
     //temperature
     if(daily){
-        temperatureHighLong = weatherData["feels_like"]["day"];
-        temperatureLowLong = weatherData["feels_like"]["night"];
+        temperatureHighLong = weatherData[tempStr]["day"];
+        temperatureLowLong = weatherData[tempStr]["night"];
         temperatureLong = temperatureHighLong;
     }
     else {
-        temperatureLong = weatherData["feels_like"];
+        temperatureLong = weatherData[tempStr];
         temperatureHighLong = temperatureLong;
         temperatureLowLong = temperatureLong;
     }

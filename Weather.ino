@@ -87,10 +87,10 @@ const String forecastStr = forecastType + "?" + FORECAST_LOC + "&" + forecastDet
 
 #define SUNRISE_ICON "sunrise"
 #define SUNSET_ICON "sunset"
-const char *weatherIcon[] = {"clear-day", "clear-night", "rain", "snow",
+const char *weatherIcon[] = {"na", "clear-day", "clear-night", "rain", "snow",
     "sleet", "wind", "fog", "cloudy", "partly-cloudy-day", "partly-cloudy-night",
     "hail", "thunderstorm", "tornado", SUNRISE_ICON, SUNSET_ICON, "na"};
-#define weatherIconSize 16
+#define weatherIconSize 17
 
 //global variables
 TFT_eSPI tft = TFT_eSPI(); //start library
@@ -100,9 +100,10 @@ Ticker tftBrightness;
 Weather currentWeather;
 #define dailyWeatherSize 3
 Weather dailyWeather[dailyWeatherSize]; //weather for today, tomorrow, and day+1
-TimeChangeRule daylightRule = DAYLIGHT_RULE_CONFIG;
-TimeChangeRule standardRule = STANDARD_RULE_CONFIG;
-Timezone tz(daylightRule, standardRule);
+int16_t timezoneOffset = 0;
+//TimeChangeRule daylightRule = DAYLIGHT_RULE_CONFIG;
+//TimeChangeRule standardRule = STANDARD_RULE_CONFIG;
+//Timezone tz(daylightRule, standardRule);
 bool haveSetup = false;
 
 //display vars
@@ -392,7 +393,7 @@ void setClock() {
 bool getWeather() {
     tft.fillRect(0,DP_H-FS1, DP_W, FS1, TFT_BLACK); //clear line
     tft.setCursor(0,DP_H-FS1,1);
-    tft.println("Powered by OpenWeatherMap");
+    tft.println("Src: OpenWeatherMap");
 
 #ifdef USE_CERT
     DEBUG_PRINTLN("Setting up cert");
@@ -444,7 +445,7 @@ bool getWeather() {
                     DEBUG_PRINTLN("headers received");
                     tft.fillRect(0,DP_H-FS1, DP_W, FS1, TFT_BLACK); //clear line
                     tft.setCursor(0,DP_H-FS1,1);
-                    tft.println("Got forecast");
+                    tft.print("Got forecast");
                     break;
                 }
             }
@@ -468,7 +469,7 @@ bool getWeather() {
     else {
         //check if can get any key
         DEBUG_PRINTLN("Parse succeeded");
-        const char *error = doc["lat"];
+        const char *error = doc["timezone"];
         if (error == NULL){
             DEBUG_PRINT("Checking if message exists: ");
             const char *msg = doc["message"];
@@ -482,19 +483,26 @@ bool getWeather() {
     }
 
     DEBUG_PRINTLN("Getting Data");
-    bool output = currentWeather.setupWeather(doc["currently"], false);
+    bool output = currentWeather.setupWeather(doc["current"], false);
     if (output == false){
         DEBUG_PRINTLN("Setup failed for current");
         return false;
     }
+    else {
+        DEBUG_PRINTLN("Setup current");
+    }
 
-#ifndef USE_CERT
-    //setLocalTime(currentWeather.getTime()); //set time
-    setTime(currentWeather.getTime()); //if not getting ntp time
-#endif
+    timezoneOffset = doc["timezone_offset"];
+    //setTime(currentWeather.getTime());
+    setLocalTime(currentWeather.getTime()); //set time
+    timeLocalStr(currentWeather.getTime());
+    DEBUG_PRINT(timezoneOffset); DEBUG_PRINT(" ") + DEBUG_PRINT(currentWeather.getTime());
+        DEBUG_PRINT(" -> "); DEBUG_PRINTLN(displayOutput);
 
     //is a work-around - sometimes does not get the icon string correctly after wakeup
+    DEBUG_PRINT("Getting Icon "); DEBUG_PRINT(currentWeather.getIcon());
     currentWeather.setIconNum(checkWeatherIcon(currentWeather.getIcon()));
+    DEBUG_PRINT(" - found");
 
     for (int i=0; i<dailyWeatherSize; i++){
         output = dailyWeather[i].setupWeather(doc["daily"][i], true);
@@ -502,10 +510,13 @@ bool getWeather() {
             DEBUG_PRINTLN("Setup failed for daily");
             return false;
         }
+        else {
+            DEBUG_PRINT("Setup daily ");
+        }
         dailyWeather[i].setIconNum(checkWeatherIcon(dailyWeather[i].getIcon()));
     }
 
-    DEBUG_PRINTLN("Done!");
+    DEBUG_PRINTLN("\nDone!");
     lastUpdateTime = millis();
     client.stop();
     return true;
@@ -638,7 +649,7 @@ inline void printTFTSpace(uint8_t i){
 
 //converts UTC to timezone
 void timeLocalStr(time_t getTime){
-    getTime = tz.toLocal(getTime);
+    getTime = getTime + timezoneOffset;
     //timeStr(getTime);
     snprintf(displayOutput, sizeof(displayOutput), "%02d:%02d ",
             hourFormat12(getTime), minute(getTime));
@@ -663,11 +674,11 @@ void timeStr(time_t getTime){
 
 //sets the current local time
 void setLocalTime(time_t getLocalTime){
-    currentLocalTime = tz.toLocal(getLocalTime);
+    currentLocalTime = getLocalTime + timezoneOffset;
     setTime(currentLocalTime);
 #ifdef debug
     DEBUG_PRINTLN("Set local time to:");
-    timeLocalStr(getLocalTime);
+    timeStr(getLocalTime);
     DEBUG_PRINT(displayOutput);
 #endif
 }
@@ -861,16 +872,42 @@ void printIcon(const char *icon){
     drawBmp(temp, tft.getCursorX(), tft.getCursorY()); //just in case
 }
 
+//DarkSky names
+//"clear-day", "clear-night", "rain", "snow", "sleet", "wind", "fog", "cloudy", "hail",
+//"partly-cloudy-day", "partly-cloudy-night", "thunderstorm", "tornado", SUNRISE_ICON, SUNSET_ICON, "na"
 //checks if string is valid
 int checkWeatherIcon(const char *icon){
+    if (icon == NULL){
+        return 0;
+    }
+
+    char weatherName[20];
+
+    //sigh, manually comparing -https://openweathermap.org/weather-conditions#Icon-list
+    const char* owmIcons[] = {"01d", "01n", "02d", "02n",
+        "03d", "03n", "04d", "04n", "09d", "09n", "10d", "10n",
+        "11d", "11n", "13d", "13n", "50d", "50n"};
+    const uint8_t owmSize = 9*2;
+    const char* dkIcons[] = {"clear-day", "clear-night", "partly-cloudy-day", "partly-cloudy-night",
+        "cloudy", "cloudy", "cloudy", "cloudy", "rain", "rain", "rain", "rain",
+        "tunderstorm", "thunderstorm", "snow", "snow", "fog", "fog"};
+    for (int i=0; i<owmSize; i++){
+        if (owmIcons[i] == icon){
+            strncpy(weatherName, dkIcons[i], 19);
+        }
+    }
+    if (weatherName == NULL){
+        strncpy(weatherName, "na", 2);
+    }
+
     //loop through, string compare
     for (int i=0; i<weatherIconSize; i++){
-        if (strcmp(icon, weatherIcon[i]) == 0){
+        if (strcmp(weatherName, weatherIcon[i]) == 0){
             return i;
         }
     }
     //do not know icon, return default unknown
-    return weatherIconSize-1;
+    return 0;
 }
 
 //flash screen to remove stuck pixels
