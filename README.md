@@ -25,6 +25,12 @@ folder. This folder can then be uploaded to the ESP8266 using the
 data in the /data folder to the SPIFFS file system. It is recommended if using the D1 mini
 to have at least 1 MB of storage, and the images take up 124.0 KiB of space.
 
+## Data Source
+This project originally used DarkSky as a source but moved to
+[OpenWeatherMap](https://openweathermap.org/darksky-openweather) after DarkSky shut down
+their API. The DarkSky branch in this repo contains the original code that was working
+with that API.
+
 ## Schematic
 
 <img align="center" src="weatherPCB/WeatherPCB.svg" />
