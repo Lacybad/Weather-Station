@@ -1,6 +1,6 @@
 /*
     Weather with display
-    Miles Young, 2019
+    Miles Young, 2019-2020
  */
 
 //Wifi
@@ -83,12 +83,12 @@ const String forecastType = "/data/2.5/onecall";
 //const String FORECAST_LOC //see define location
 const String forecastDetails = "exclude=minutely,hourly,flags,alerts";
 const String forecastStr = forecastType + "?" + FORECAST_LOC + "&" + forecastDetails +
-"&units=" + UNITS + "&appid=" + API_KEY;
+    "&units=" + UNITS + "&appid=" + API_KEY;
 
 #define SUNRISE_ICON "sunrise"
 #define SUNSET_ICON "sunset"
 
-//global variables
+//global variables - modifiable
 TFT_eSPI tft = TFT_eSPI(); //start library
 Ticker tftBrightness;
 
@@ -233,7 +233,7 @@ void setup() {
     analogWrite(pwmOut, 1); //start at lowest brightness
     displayOn = false;
     displayOnOff();
-    tft.init();
+    tft.init(); //start display
     tft.setRotation(2);
 
     clearScreen(2); //start at top, font size 2
@@ -639,18 +639,10 @@ inline void printTFTSpace(uint8_t i){
 
 //converts UTC to timezone
 void timeLocalStr(time_t getTime){
-    getTime = getTime + timezoneOffset;
-    //timeStr(getTime);
-    snprintf(displayOutput, sizeof(displayOutput), "%02d:%02d ",
-            hourFormat12(getTime), minute(getTime));
-    if (isAM(getTime)){
-        strncat(displayOutput,"AM", 2);
-    }
-    else {
-        strncat(displayOutput, "PM", 2);
-    }
+    timeStr(getTime + timezoneOffset);
 }
 
+//converts a time to AM/PM
 void timeStr(time_t getTime){
     snprintf(displayOutput, sizeof(displayOutput), "%02d:%02d ",
             hourFormat12(getTime), minute(getTime));

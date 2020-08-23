@@ -27,10 +27,12 @@ bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
 
     const char* temp = weatherData["weather"][0]["icon"];
 
+    //loop through possible combinations
     const char* owmIcons[] = {"01d", "01n", "02d", "02n",
         "03d", "03n", "04d", "04n", "09d", "09n", "10d", "10n",
         "11d", "11n", "13d", "13n", "50d", "50n"};
     const uint8_t owmSize = 9*2;
+    //possible names from files
     const char* dkIcons[] = {"clear-day", "clear-night", "partly-cloudy-day", "partly-cloudy-night",
         "cloudy", "cloudy", "cloudy", "cloudy", "rain", "rain", "rain", "rain",
         "tunderstorm", "thunderstorm", "snow", "snow", "fog", "fog"};
@@ -76,6 +78,7 @@ bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
         temperatureLowLong = temperatureLong;
         temperatureApproxLong = weatherData["feels_like"];
     }
+    //get integers
     temperature = round(temperatureLong);
     temperatureHigh = round(temperatureHighLong);
     temperatureLow = round(temperatureLowLong);
