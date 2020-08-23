@@ -30,7 +30,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 */
 //uncomment to print debug, from https://forum.arduino.cc/index.php?topic=46900.0
 //hint - when debugging, change the times to trigger things faster...
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     //#define SHOW_BRIGHTNESS
     //#define SHOW_MOTION
@@ -450,8 +450,9 @@ bool getWeather() {
     //help from https://arduinojson.org/v6/assistant/
     DEBUG_PRINT("Created doc with size:"); DEBUG_PRINT(capacity); DEBUG_PRINT(" -> ");
     DynamicJsonDocument doc(capacity);
+    tft.println("..");
     DeserializationError error = deserializeJson(doc, client.readStringUntil('\n'));
-    tft.println(" - parsed");
+    tft.println(".....");
     DEBUG_PRINT("Parse Status: ");
 
     if (error){
@@ -491,7 +492,7 @@ bool getWeather() {
     //setTime(currentWeather.getTime());
     setLocalTime(currentWeather.getTime()); //set time
     timeLocalStr(currentWeather.getTime());
-    DEBUG_PRINT(timezoneOffset); DEBUG_PRINT(" ") + DEBUG_PRINT(currentWeather.getTime());
+    DEBUG_PRINT(timezoneOffset); DEBUG_PRINT(" "); DEBUG_PRINT(currentWeather.getTime());
         DEBUG_PRINT(" -> "); DEBUG_PRINTLN(displayOutput);
 
     //is a work-around - sometimes does not get the icon string correctly after wakeup
