@@ -12,57 +12,65 @@ Weather::Weather() {
     setup = false;
 }
 
-bool Weather::setupWeather(JsonObject weatherData) {
+bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
     //const char* weatherType;
     //https://arduinojson.org/v6/api/jsonobject/containskey/
-    //weatherType = weatherData["temperatureHigh"]; //check if daily
-    //if (weatherType) { //check if not null
-    if (weatherData.containsKey("temperatureHigh")) { //check if not null
-        daily = true;
+    //https://arduinojson.org/v6/assistant/
+    const char* error = weatherData["clouds"];
+    if (error) { //check if null or error
+        setup = false;
+        return false;
     }
-    else {
-        //weatherType = weatherData["temperature"]; //check if current
-        if (weatherData.containsKey("temperature")){
-            daily = false;
-        }
-        else { //is an error
-            setup = false;
-            return false;
+    daily = ifDaily;
+
+    time = weatherData["dt"]; //time of forecast
+
+    const char* temp = weatherData["weather"][0]["icon"];
+
+    const char* owmIcons[] = {"01d", "01n", "02d", "02n",
+        "03d", "03n", "04d", "04n", "09d", "09n", "10d", "10n",
+        "11d", "11n", "13d", "13n", "50d", "50n"};
+    const uint8_t owmSize = 9*2;
+    const char* dkIcons[] = {"clear-day", "clear-night", "partly-cloudy-day", "partly-cloudy-night",
+        "cloudy", "cloudy", "cloudy", "cloudy", "rain", "rain", "rain", "rain",
+        "tunderstorm", "thunderstorm", "snow", "snow", "fog", "fog"};
+    for (int i=0; i<owmSize; i++){
+        if (strcmp(owmIcons[i], temp) == 0){
+            icon = dkIcons[i];
         }
     }
-
-    time = weatherData["time"];
-
-    icon = weatherData["icon"];
-    iconNum = 0; //by default
+    if (icon == NULL){
+        icon = "na";
+    }
 
     //sunset/sunrise time
     if (daily){
-        sunriseTime = weatherData["sunriseTime"];
-        sunsetTime = weatherData["sunsetTime"];
+        sunriseTime = weatherData["sunrise"];
+        sunsetTime = weatherData["sunset"];
     }
     else {
         sunriseTime = 0;
         sunsetTime = 0;
     }
 
-    float tempPrecip = weatherData["precipProbability"];
+    float tempPrecip = weatherData["pop"]; //precipitation probability
     precipProbability = (int)(100*tempPrecip); //convert to int
     if (daily){
-        tempPrecip = weatherData["precipIntensity"];
+        tempPrecip = weatherData["rain"];
         //precipAmount = (((int)(100*tempPrecip)*24) / 100); //over 24 hours, round
         //precipitation amount over 24 hours
         precipAmount = ((tempPrecip*24)*100)/100;
     }
 
+    const String tempStr = "temp"; //temp or feels_like
     //temperature
     if(daily){
-        temperatureHighLong = weatherData["apparentTemperatureHigh"];
-        temperatureLowLong = weatherData["apparentTemperatureLow"];
+        temperatureHighLong = weatherData[tempStr]["day"];
+        temperatureLowLong = weatherData[tempStr]["night"];
         temperatureLong = temperatureHighLong;
     }
     else {
-        temperatureLong = weatherData["apparentTemperature"];
+        temperatureLong = weatherData[tempStr];
         temperatureHighLong = temperatureLong;
         temperatureLowLong = temperatureLong;
     }
@@ -88,14 +96,6 @@ long Weather::getTime(){
 
 const char* Weather::getIcon(){
     return icon;
-}
-
-void Weather::setIconNum(uint8_t num){
-    iconNum = num; //optional
-}
-
-uint8_t Weather::getIconNum(){
-    return iconNum;
 }
 
 long Weather::getSunriseTime(){

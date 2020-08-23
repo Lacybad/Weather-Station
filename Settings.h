@@ -8,9 +8,12 @@
 #define STAPSK  "PSWD"
 #endif
 
-//darksky api key
+//OpenWeatherMap api key (example)
 #define API_KEY "abcdef0123456789"
-#define FORECAST_LOC "/40.7828687,-73.9675438" //example, is NYC
+//example, is NYC
+#define LAT "40.7828687"
+#define LON "-73.9675438"
+#define FORECAST_LOC "lat=" LAT "&lon=" LON
 
 //timezone vars
 #define DAYLIGHT_RULE_CONFIG {"EDT", Second, Sun, Mar, 2, -(4*60)}
@@ -29,5 +32,5 @@
 //humidity or not
 #define PRECIP_INSTY //use precip intensity, else use humidity
 //units
-#define UNITS "us" //units using
+#define UNITS "imperial" //units using
 #define PRECIP_UNIT "in" //to print out
