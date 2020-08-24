@@ -537,10 +537,9 @@ void printWeatherDisplay(){
     printIcon(currentWeather.getIcon());
 
     //Current Temp
-    tft.setCursor(DP_HALF_W, cursorY+FS1-1, 2);
+    //tft.setCursor(DP_HALF_W, cursorY+FS1-1, 2); tft.print("~");
+    tft.setCursor(DP_HALF_W, cursorY, 4);
     //colorTemp(currentWeather.getTemp());
-    tft.print("~");
-    tft.setCursor(DP_HALF_W + FS1, cursorY, 4);
     tft.print(currentWeather.getTempApprox());
     tft.setTextColor(TFT_WHITE);
     tft.drawCircle(tft.getCursorX()+4, tft.getCursorY()+4, 2, TFT_WHITE); //degree symbol
@@ -590,7 +589,7 @@ void printWeatherDisplay(){
     tft.setCursor(tft.getCursorX(), tft.getCursorY()+FS1-1);
 
     //Add some color - draw current temp as a rect, x0,y0,x1,y1
-    tft.fillRect(DP_W-2, 0, DP_W, DP_HALF_H-FS2, getColorTemp(currentWeather.getTempApprox()));
+    tft.fillRect(DP_W-2, 0, DP_W, DP_HALF_H-(FS2<<1), getColorTemp(currentWeather.getTempApprox()));
 
     //next day forecast
     tft.setTextColor(TFT_WHITE);
