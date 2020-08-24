@@ -45,6 +45,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 #define DP_W 128        //display used, need to change if using different size
 #define DP_HALF_W (DP_W >> 1)
 #define DP_H 160
+#define DP_HALF_H (DP_H >> 1)
 #define LARGE_ICON 44
 #define SMALL_ICON 20
 #define TIME_ICON 8     //size of time XX:XX XM
@@ -141,6 +142,7 @@ void printPrecip(const String typeWater, int water, uint8_t space);
 void printPrecipIntensity(float waterAmt, uint8_t space);
 void printHumid(const String typeWater, int water, uint8_t space);
 void colorTemp(int color);
+int getColorTemp(int color);
 void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
         uint8_t textWidth);
 void printTemp(int tempH, int tempL, uint8_t space);
@@ -526,18 +528,20 @@ void printWeatherDisplay(){
     }
 
     //current weather
-    tft.setCursor(tft.getCursorX()+1,tft.getCursorY());
+    tft.setCursor(tft.getCursorX()+1, tft.getCursorY());
     tft.print("Updated: ");
     timeLocalStr(currentWeather.getTime());
     tft.println(displayOutput);
     cursorY = tft.getCursorY();
-    tft.setCursor((DP_HALF_W - LARGE_ICON)>>1,cursorY+1);
+    tft.setCursor((DP_HALF_W - LARGE_ICON)>>1, cursorY+1);
     printIcon(currentWeather.getIcon());
 
     //Current Temp
-    tft.setCursor(DP_HALF_W, cursorY, 4);
+    tft.setCursor(DP_HALF_W, cursorY+FS1-1, 2);
     //colorTemp(currentWeather.getTemp());
-    tft.print(currentWeather.getTemp());
+    tft.print("~");
+    tft.setCursor(DP_HALF_W + FS1, cursorY, 4);
+    tft.print(currentWeather.getTempApprox());
     tft.setTextColor(TFT_WHITE);
     tft.drawCircle(tft.getCursorX()+4, tft.getCursorY()+4, 2, TFT_WHITE); //degree symbol
     tft.setCursor(tft.getCursorX()+10, tft.getCursorY(), 2);
@@ -551,7 +555,7 @@ void printWeatherDisplay(){
     tft.println();
 
     //Rain/Humidity
-    tft.setCursor(tft.getCursorX(), tft.getCursorY()-(FS1>>2), 2);
+    tft.setCursor(tft.getCursorX()+4, tft.getCursorY()-(FS1>>2), 2);
     printPrecip("Rain:", dailyWeather[0].getPrecipProb(), 4);
     tft.setCursor(DP_HALF_W+6, tft.getCursorY());
 #ifdef PRECIP_INSTY
@@ -562,6 +566,7 @@ void printWeatherDisplay(){
     tft.println();
     tft.setTextColor(TFT_WHITE);
 
+    //set sunset/rise
     cursorY = tft.getCursorY();
     tft.setCursor(4,cursorY,1);
     timeLocalStr(dailyWeather[0].getSunriseTime());
@@ -583,6 +588,9 @@ void printWeatherDisplay(){
     }
 
     tft.setCursor(tft.getCursorX(), tft.getCursorY()+FS1-1);
+
+    //Add some color - draw current temp as a rect, x0,y0,x1,y1
+    tft.fillRect(DP_W-2, 0, DP_W, DP_HALF_H-FS2, getColorTemp(currentWeather.getTempApprox()));
 
     //next day forecast
     tft.setTextColor(TFT_WHITE);
@@ -608,19 +616,19 @@ void printWeatherDisplay(){
             FSX2, DP_HALF_W);
     tft.println();
 
-    tft.setCursor(4,tft.getCursorY()-1,1);
+    tft.setCursor(4+1,tft.getCursorY()-1,1);
     printPrecip("Rain:", dailyWeather[1].getPrecipProb(), 4);
-    tft.setCursor(DP_HALF_W+2,tft.getCursorY());
+    tft.setCursor(DP_HALF_W+2+1,tft.getCursorY());
     printPrecip("Rain:", dailyWeather[2].getPrecipProb(), 4);
     tft.println();
 
-    tft.setCursor(4,tft.getCursorY());
+    tft.setCursor(4+1,tft.getCursorY());
 #ifdef PRECIP_INSTY
     printPrecipIntensity(dailyWeather[1].getPrecipAmt(), 4);
 #else
     printHumid("RH:", dailyWeather[2].getHumidity(), 4);
 #endif
-    tft.setCursor(DP_HALF_W+2,tft.getCursorY());
+    tft.setCursor(DP_HALF_W+2+1,tft.getCursorY());
 #ifdef PRECIP_INSTY
     printPrecipIntensity(dailyWeather[2].getPrecipAmt(), 4);
 #else
@@ -730,20 +738,25 @@ void printHumid(const String typeWater, int water, uint8_t space){
 
 //changes with color of temperature
 void colorTemp(int color){
+    tft.setTextColor(getColorTemp(color));
+}
+
+//changes with color of temperature
+int getColorTemp(int color){
     if (color > 90){
-        tft.setTextColor(TFT_RED);
+        return TFT_RED;
     }
     else if (color > 75){
-        tft.setTextColor(TFT_ORANGE);
+        return TFT_ORANGE;
     }
     else if (color > 50){
-        tft.setTextColor(TFT_CYAN);
+        return TFT_CYAN;
     }
     else if (color > 32){
-        tft.setTextColor(TFT_LIGHTGREY);
+        return TFT_LIGHTGREY;
     }
     else {
-        tft.setTextColor(TFT_WHITE);
+        return TFT_WHITE;
     }
 }
 
@@ -772,11 +785,13 @@ void printTempCenter(int tempH, int tempL, uint8_t space, uint8_t fontSize,
 //prints temperature format ( xx / xx )
 void printTemp(int tempH, int tempL, uint8_t space){
     //colorPrecip(tempH); //hard to read, commented out
+    tft.setTextColor(TFT_WHITE);
     tft.print(tempH);
     printTFTSpace(space);
-    tft.setTextColor(TFT_WHITE);
+    tft.setTextColor(getColorTemp(tempH));
     tft.print("/");
     printTFTSpace(space);
+    tft.setTextColor(TFT_WHITE);
     //colorTemp(tempL);
     tft.print(tempL);
     tft.setTextColor(TFT_WHITE);
