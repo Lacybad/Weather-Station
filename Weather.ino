@@ -41,6 +41,9 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
     #define DEBUG_PRINTLN(str)
 #endif
 
+//uncomment for approx temp (can be 10 deg inaccurate vs other sources)
+//#define TEMPAPPROX
+
 //display constants
 #define DP_W 128        //display used, need to change if using different size
 #define DP_HALF_W (DP_W >> 1)
@@ -540,7 +543,11 @@ void printWeatherDisplay(){
     //tft.setCursor(DP_HALF_W, cursorY+FS1-1, 2); tft.print("~");
     tft.setCursor(DP_HALF_W, cursorY, 4);
     //colorTemp(currentWeather.getTemp());
+#ifdef TEMPAPPROX
     tft.print(currentWeather.getTempApprox());
+#else
+    tft.print(currentWeather.getTemp());
+#endif
     tft.setTextColor(TFT_WHITE);
     tft.drawCircle(tft.getCursorX()+4, tft.getCursorY()+4, 2, TFT_WHITE); //degree symbol
     tft.setCursor(tft.getCursorX()+10, tft.getCursorY(), 2);
