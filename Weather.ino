@@ -80,8 +80,9 @@ const char *host = "api.openweathermap.org";
     const int httpsPort = 80; //is http
     const String httpsProtocol="HTTP/1.0";
 #endif
-const size_t capacity = 9*JSON_ARRAY_SIZE(1) + JSON_ARRAY_SIZE(8) + 17*JSON_OBJECT_SIZE(4)
-    + 9*JSON_OBJECT_SIZE(6) + 9*JSON_OBJECT_SIZE(14) + 2000;
+const size_t capacity = 8*JSON_ARRAY_SIZE(1) + JSON_ARRAY_SIZE(2) + JSON_ARRAY_SIZE(8) +
+    18*JSON_OBJECT_SIZE(4) + 9*JSON_OBJECT_SIZE(6) + 5*JSON_OBJECT_SIZE(14) +
+    4*JSON_OBJECT_SIZE(15) + 4000;
 
 const String forecastType = "/data/2.5/onecall";
 //const String FORECAST_LOC //see define location
@@ -362,7 +363,6 @@ void startWeather(){
     }
     else {
         DEBUG_PRINTLN("Parse FAILED");
-        tft.println("Parse FAILED");
     }
 }
 
@@ -425,7 +425,7 @@ bool getWeather() {
         return false; //should never get here
     }
     else {
-        DEBUG_PRINT("Getting forecast for: ");
+        DEBUG_PRINTLN("Getting forecast for: ");
         DEBUG_PRINTLN("https://" + String(host) + forecastStr);
 
         client.print(String("GET ") + forecastStr + " " + httpsProtocol + "\r\n" +
@@ -455,13 +455,15 @@ bool getWeather() {
     tft.println("..");
     DeserializationError error = deserializeJson(doc, client.readStringUntil('\n'));
     tft.println(".....");
+    tft.setCursor(0,DP_HALF_H,1);
     DEBUG_PRINT("Parse Status: ");
 
     if (error){
         DEBUG_PRINT("Parse failed - ");
         DEBUG_PRINTLN(error.c_str());
         tft.println("JSON parse failed");
-        delay(1*1000);
+        tft.println(error.c_str());
+        delay(100*1000);
         return false;
     }
     else {
