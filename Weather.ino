@@ -68,6 +68,7 @@ PIR_ON_TIME, PIR_OFF_TIME, DAYLIGHT_RULE_CONFIG, STANDARD_RULE_CONFIG
 #define buttonPin D1
 #define UNIX_SECOND 1000UL //1000 uS
 #define UNIX_MINUTE UNIX_SECOND*60UL
+#define DELAYTIME 20*UNIX_MINUTE
 
 // Constant variables
 const char *ssid = STASSID;
@@ -420,7 +421,7 @@ bool getWeather() {
         if(displayOn == true){
             setBrightness(5);
         }
-        delay(60*1000); //stop for 60 minutes
+        delay(DELAYTIME); //stop for delay time
         ESP.restart(); //restart to avoid loop
         return false; //should never get here
     }
@@ -452,9 +453,9 @@ bool getWeather() {
     //help from https://arduinojson.org/v6/assistant/
     DEBUG_PRINT("Created doc with size:"); DEBUG_PRINT(capacity); DEBUG_PRINT(" -> ");
     DynamicJsonDocument doc(capacity);
-    tft.println("..");
+    tft.println("...");
     DeserializationError error = deserializeJson(doc, client.readStringUntil('\n'));
-    tft.println(".....");
+    tft.println("...");
     tft.setCursor(0,DP_HALF_H,1);
     DEBUG_PRINT("Parse Status: ");
 
@@ -463,7 +464,7 @@ bool getWeather() {
         DEBUG_PRINTLN(error.c_str());
         tft.println("JSON parse failed");
         tft.println(error.c_str());
-        delay(100*1000);
+        delay(DELAYTIME);
         return false;
     }
     else {
