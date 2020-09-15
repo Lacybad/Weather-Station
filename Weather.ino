@@ -695,7 +695,7 @@ void colorPrecip(int color){
 //changes the color of rain to stand out more
 void colorPrecipIntensity(float color){
     if (color >= 0.01){
-        uint16_t blueAmt = color*100; //get rid of decimal place
+        uint16_t blueAmt = ((uint16_t)color) >> 1;
         if (blueAmt > 255){
             blueAmt = 255;
         }
@@ -728,8 +728,20 @@ void printPrecip(const String typeWater, int water, uint8_t space){
 
 //prints rain in inches
 void printPrecipIntensity(float waterAmt, uint8_t space){
+    bool useInt = false;
+    if (waterAmt > 10.0f){
+        waterAmt = round(waterAmt); //is less inaccurate
+        useInt = true;
+    }
+
     colorPrecipIntensity(waterAmt);
-    tft.print(waterAmt);
+    if(useInt){
+        tft.print((uint16_t)waterAmt);
+    }
+    else{
+        tft.print(waterAmt);
+    }
+
     printTFTSpace(space);
     tft.print(PRECIP_UNIT);
     tft.setTextColor(TFT_WHITE);
