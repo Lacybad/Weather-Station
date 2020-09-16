@@ -61,7 +61,7 @@ bool Weather::setupWeather(JsonObject weatherData, bool ifDaily) {
         tempPrecip = weatherData["rain"];
         //precipAmount = (((int)(100*tempPrecip)*24) / 100); //over 24 hours, round
         //precipitation amount over 24 hours
-        precipAmount = ((tempPrecip*24)*100)/100;
+        precipAmount = tempPrecip/24.5f; //mm to inches
     }
 
     const String tempStr = "temp"; //temp or feels_like

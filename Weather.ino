@@ -142,6 +142,7 @@ void timeStr(time_t getTime);
 void setLocalTime(time_t getLocalTime);
 void colorPrecip(int color);
 void colorPrecipIntensity(float color);
+void colorBlueBounds(uint16_t blueAmt);
 void colorHumid(int color);
 void printPrecip(const String typeWater, int water, uint8_t space);
 void printPrecipIntensity(float waterAmt, uint8_t space);
@@ -685,7 +686,7 @@ void setLocalTime(time_t getLocalTime){
 //changes the color of rain to stand out more
 void colorPrecip(int color){
     if (color > 40){
-        tft.setTextColor(rgbToHex(0, 255 - (color>>2), 255));
+        colorBlueBounds(color>>2);
     }
     else {
         tft.setTextColor(TFT_WHITE);
@@ -695,17 +696,20 @@ void colorPrecip(int color){
 //changes the color of rain to stand out more
 void colorPrecipIntensity(float color){
     if (color >= 0.01){
-        uint16_t blueAmt = ((uint16_t)color) >> 1;
-        if (blueAmt > 255){
-            blueAmt = 255;
-        }
-        tft.setTextColor(rgbToHex(0, 255 - blueAmt, 255));
+        colorBlueBounds((uint16_t)color*100);
     }
     else {
         tft.setTextColor(TFT_WHITE);
     }
 }
 
+//checks bounds of colors
+void colorBlueBounds(uint16_t blueAmt){
+    if (blueAmt > 255){
+        blueAmt = 255;
+    }
+    tft.setTextColor(rgbToHex(0, 255 - blueAmt, 255));
+}
 //changes humidity to stand out more
 void colorHumid(int color){
     if (color > 70){
