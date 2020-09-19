@@ -567,7 +567,7 @@ void printWeatherDisplay(){
     //Rain/Humidity
     tft.setCursor(tft.getCursorX()+4, tft.getCursorY()-(FS1>>2), 2);
     printPrecip("Rain:", dailyWeather[0].getPrecipProb(), 4);
-    tft.setCursor(DP_HALF_W+6, tft.getCursorY());
+    tft.setCursor(DP_HALF_W+8, tft.getCursorY());
 #ifdef PRECIP_INSTY
     printPrecipIntensity(dailyWeather[0].getPrecipAmt(), 4);
 #else
